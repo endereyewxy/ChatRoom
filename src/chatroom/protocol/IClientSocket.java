@@ -1,4 +1,4 @@
-package chatroom.interfaces;
+package chatroom.protocol;
 
 public interface IClientSocket {
     void bind(IClientApp app);
@@ -20,4 +20,6 @@ public interface IClientSocket {
     void requestSendMessage(long groupId, String msg); // C8
 
     void replyOtherRequestJoinGroup(long reqId, boolean agree); // C9
+
+    void requestGroupMemberList(long groupId); // CA
 }

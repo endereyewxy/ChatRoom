@@ -1,4 +1,4 @@
-package chatroom.interfaces;
+package chatroom.protocol;
 
 public interface IServerApp {
     void bind(IServerSocket socket);
@@ -20,6 +20,8 @@ public interface IServerApp {
     void onRequestSendMessage(long clientUserId, long groupId, String msg); // C8
 
     void onOtherRequestJoinGroupReplied(long clientUserId, long reqId, boolean agree); // C9
+
+    void onRequestGroupMemberList(long clientUserId, long groupId); // CA
 
     void onUserLogout(long clientUserId); // automatically triggered when connection lost
 }

@@ -1,4 +1,4 @@
-package chatroom.interfaces;
+package chatroom.protocol;
 
 public interface IClientApp {
     void bind(IClientSocket socket);
@@ -7,7 +7,7 @@ public interface IClientApp {
 
     void onUserListReceived(long[] userIds, String[] usernames); // S2
 
-    void onGroupListReceived(long[] groupIds, String[] groupNames); // S3
+    void onGroupListReceived(long[] groupIds, String[] groupNames, byte[] flags); // S3
 
     void onOtherRequestJoinGroup(long groupId, long userId, long reqId); // S4
 
@@ -16,4 +16,6 @@ public interface IClientApp {
     void onGroupLeft(long groupId); // S6
 
     void onMessageReceived(long groupId, long userId, String msg); // S7
+
+    void onGroupMemberListReceived(long groupId, long[] userIds, String[] usernames, byte[] flags); // S8
 }
