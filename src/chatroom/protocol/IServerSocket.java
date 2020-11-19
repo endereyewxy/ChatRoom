@@ -5,9 +5,9 @@ public interface IServerSocket {
 
     void replyLogin(long client, long userId); // S1
 
-    void replyUserList(long client, long[] userIds, String[] usernames); // S2
+    void replyUserList(long client, Long[] userIds, String[] usernames); // S2
 
-    void replyGroupList(long client, long[] groupIds, String[] groupNames, byte[] flags); // S3
+    void replyGroupList(long client, Long[] groupIds, String[] groupNames, Byte[] flags); // S3
 
     void notifyOtherRequestJoinGroup(long client, long groupId, long userId, long reqId); // S4
 
@@ -17,5 +17,5 @@ public interface IServerSocket {
 
     void notifyMessage(long client, long groupId, long userId, String msg); // S7
 
-    void replyRequestMemberList(long client, long groupId, long[] userIds, String[] usernames, byte[] flags); // S8
+    void replyRequestMemberList(long client, long groupId, Long[] userIds, String[] usernames, Byte[] flags); // S8
 }

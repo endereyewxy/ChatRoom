@@ -5,9 +5,9 @@ public interface IClientApp {
 
     void onLoginResultReceived(long userId); // S1
 
-    void onUserListReceived(long[] userIds, String[] usernames); // S2
+    void onUserListReceived(Long[] userIds, String[] usernames); // S2
 
-    void onGroupListReceived(long[] groupIds, String[] groupNames, byte[] flags); // S3
+    void onGroupListReceived(Long[] groupIds, String[] groupNames, Byte[] flags); // S3
 
     void onOtherRequestJoinGroup(long groupId, long userId, long reqId); // S4
 
@@ -17,5 +17,5 @@ public interface IClientApp {
 
     void onMessageReceived(long groupId, long userId, String msg); // S7
 
-    void onGroupMemberListReceived(long groupId, long[] userIds, String[] usernames, byte[] flags); // S8
+    void onGroupMemberListReceived(long groupId, Long[] userIds, String[] usernames, Byte[] flags); // S8
 }
