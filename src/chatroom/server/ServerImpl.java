@@ -31,7 +31,7 @@ public class ServerImpl implements IServerApp {
 
     // @formatter:off
     private final HashMap<String, User> usersByUsername = new HashMap<>();
-    private final HashMap<Long,   User> usersByClientId = new HashMap<>();
+    private final HashMap<Long, User> usersByClientId = new HashMap<>();
     // @formatter:on
 
     public static class Group {
@@ -83,7 +83,7 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestLogin(long client, String username, String passwordMd5) {
+    public void onRequestLogin(long client, String username, String passwordMd5) throws IOException {
         final User user;
         if (noAuthenticationMode)
             // No-authentication mode allows every login request.
@@ -99,7 +99,7 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestUserList(long client) {
+    public void onRequestUserList(long client) throws IOException {
         socket.replyUserList(client,
                 usersByClientId.keySet()
                         .toArray(new Long[0]),
@@ -110,7 +110,7 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestGroupList(long client) {
+    public void onRequestGroupList(long client) throws IOException {
         socket.replyGroupList(client,
                 LongStream.rangeClosed(1, groups.size())
                         .boxed()
@@ -124,13 +124,13 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestCreateGroup(long client, String groupName) {
+    public void onRequestCreateGroup(long client, String groupName) throws IOException {
         groups.add(new Group(groupName, client));
         socket.replyGroupJoined(client, (byte) 2, groups.size());
     }
 
     @Override
-    public void onRequestJoinGroup(long client, long groupId) {
+    public void onRequestJoinGroup(long client, long groupId) throws IOException {
         if (0 < groupId && groupId <= groups.size()) {
             reqIdCounter += 1;
             requests.put(reqIdCounter, new Request(groupId, client));
@@ -143,7 +143,7 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestInvite(long client, long groupId, long userId) {
+    public void onRequestInvite(long client, long groupId, long userId) throws IOException {
         if (0 < groupId && groupId <= groups.size()) {
             final Group group = groups.get((int) (groupId - 1));
             if (group.owner == client && !group.members.contains(userId)) {
@@ -154,7 +154,7 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestLeaveGroup(long client, long groupId) {
+    public void onRequestLeaveGroup(long client, long groupId) throws IOException {
         if (0 < groupId && groupId <= groups.size()) {
             final Group group = groups.get((int) (groupId - 1));
             if (group.members.contains(client)) {
@@ -170,12 +170,18 @@ public class ServerImpl implements IServerApp {
             final Group group = groups.get((int) (groupId - 1));
             if (group.members.contains(client))
                 group.members.forEach(
-                        id -> socket.notifyMessage(id, groupId, client, msg));
+                        id -> {
+                            try {
+                                socket.notifyMessage(id, groupId, client, msg);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
         }
     }
 
     @Override
-    public void onOtherRequestJoinGroupReplied(long client, long reqId, boolean agree) {
+    public void onOtherRequestJoinGroupReplied(long client, long reqId, boolean agree) throws IOException {
         if (requests.containsKey(reqId)) {
             final Request request = requests.remove(reqId);
             socket.replyGroupJoined(request.joinerId, (byte) (agree ? 1 : 0), request.groupId);
@@ -183,7 +189,7 @@ public class ServerImpl implements IServerApp {
     }
 
     @Override
-    public void onRequestGroupMemberList(long client, long groupId) {
+    public void onRequestGroupMemberList(long client, long groupId) throws IOException {
         if (0 < groupId && groupId <= groups.size()) {
             final Group group = groups.get((int) (groupId - 1));
             socket.replyRequestMemberList(client, groupId,
