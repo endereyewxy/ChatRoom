@@ -1,12 +1,12 @@
 package chatroom.model;
 
-public class serverModel {
+public class serverMsgModel {
     public static class s1 {
         private byte type;
         private long userId;
 
-        public s1(byte type, long userId) {
-            this.type = type;
+        public s1(long userId) {
+            this.type = 'i';
             this.userId = userId;
         }
     }
@@ -16,8 +16,8 @@ public class serverModel {
         private Long[] userId;
         private String[] usernames;
 
-        public s2(byte type, Long[] userId, String[] usernames) {
-            this.type = type;
+        public s2(Long[] userId, String[] usernames) {
+            this.type = 'u';
             this.userId = userId;
             this.usernames = usernames;
         }
@@ -29,8 +29,8 @@ public class serverModel {
         private String[] groupNames;
         private Byte[] flags;
 
-        public s3(byte type, Long[] groupIds, String[] groupNames, Byte[] flags) {
-            this.type = type;
+        public s3(Long[] groupIds, String[] groupNames, Byte[] flags) {
+            this.type = 'g';
             this.groupIds = groupIds;
             this.groupNames = groupNames;
             this.flags = flags;
@@ -41,8 +41,8 @@ public class serverModel {
         private byte type;
         private long groupId, userId, reqId;
 
-        public s4(byte type, long groupId, long userId, long reqId) {
-            this.type = type;
+        public s4(long groupId, long userId, long reqId) {
+            this.type = 'o';
             this.groupId = groupId;
             this.userId = userId;
             this.reqId = reqId;
@@ -53,8 +53,8 @@ public class serverModel {
         private byte type, flags;
         private long userId;
 
-        public s5(byte type, byte flags, long userId) {
-            this.type = type;
+        public s5(byte flags, long userId) {
+            this.type = 'j';
             this.flags = flags;
             this.userId = userId;
         }
@@ -64,8 +64,8 @@ public class serverModel {
         private byte type;
         private long groupId;
 
-        public s6(byte type, long groupId) {
-            this.type = type;
+        public s6(long groupId) {
+            this.type = 'e';
             this.groupId = groupId;
         }
     }
@@ -75,8 +75,8 @@ public class serverModel {
         private long groupId, userId;
         private String msg;
 
-        public s7(byte type, long groupId, long userId, String msg) {
-            this.type = type;
+        public s7(long groupId, long userId, String msg) {
+            this.type = 'm';
             this.groupId = groupId;
             this.userId = userId;
             this.msg = msg;
@@ -90,8 +90,8 @@ public class serverModel {
         private String[] usernames;
         private Byte[] flags;
 
-        public s8(byte type, long groupId, Long[] userIds, String[] usernames, Byte[] flags) {
-            this.type = type;
+        public s8(long groupId, Long[] userIds, String[] usernames, Byte[] flags) {
+            this.type = 'b';
             this.groupId = groupId;
             this.userId = userIds;
             this.usernames = usernames;
