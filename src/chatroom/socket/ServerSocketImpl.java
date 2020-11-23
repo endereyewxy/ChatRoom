@@ -7,14 +7,9 @@ import chatroom.server.ServerThread;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketImpl;
 import java.util.HashMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
-public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.IServerSocket, Callable<Void> {
+public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.IServerSocket{
     private IServerApp app;
     private Socket socket;
     private HashMap<Long, ServerThread> threads = new HashMap<>();
@@ -115,8 +110,4 @@ public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.
         sendMsg(socket, msg8);
     }
 
-    @Override
-    public Void call() throws Exception {
-        return null;
-    }
 }
