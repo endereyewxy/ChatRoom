@@ -23,6 +23,10 @@ public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
 
     }
 
+    public static void main(String args[]) throws IOException {
+        ClientSocketImpl client = new ClientSocketImpl();
+    }
+
     public void sendMsg(Socket socket, Object object) throws IOException {
         OutputStream os = socket.getOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
@@ -67,7 +71,7 @@ public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
 
     @Override
     public void requestInvite(long groupId, long userId) throws IOException {
-        clientMsgModel.c6 req6 = new clientMsgModel.c6(groupId,userId);
+        clientMsgModel.c6 req6 = new clientMsgModel.c6(groupId, userId);
         sendMsg(socket, req6);
     }
 
@@ -79,13 +83,13 @@ public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
 
     @Override
     public void requestSendMessage(long groupId, String msg) throws IOException {
-        clientMsgModel.c8 req8 = new clientMsgModel.c8(groupId,msg);
+        clientMsgModel.c8 req8 = new clientMsgModel.c8(groupId, msg);
         sendMsg(socket, req8);
     }
 
     @Override
     public void replyOtherRequestJoinGroup(long reqId, boolean agree) throws IOException {
-        clientMsgModel.c9 req9 = new clientMsgModel.c9(reqId,agree);
+        clientMsgModel.c9 req9 = new clientMsgModel.c9(reqId, agree);
         sendMsg(socket, req9);
     }
 

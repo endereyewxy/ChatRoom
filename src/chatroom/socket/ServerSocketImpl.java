@@ -5,6 +5,7 @@ import chatroom.protocol.IServerApp;
 import chatroom.server.ServerThread;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -16,15 +17,22 @@ public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.
 
     public ServerSocketImpl() throws IOException {
         System.out.println("服务端启动");
+        this.setReuseAddress(true);
+        this.bind(new InetSocketAddress(8888));
         while (true) {
             try {
                 socket = this.accept();
-                final ServerThread task = new ServerThread(socket);//todo 将所有连接放入线程管理
+                System.out.println("客户端进入");
+                final ServerThread task = new ServerThread(socket);
                 threads.put(task.getClient(), task);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void main(String args[]) throws IOException {
+        ServerSocketImpl client = new ServerSocketImpl();
     }
 
 
