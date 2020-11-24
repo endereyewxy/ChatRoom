@@ -1,8 +1,9 @@
 package chatroom.socket;
 
+import chatroom.model.clientMsgModel;
 import chatroom.model.serverMsgModel;
 import chatroom.protocol.IServerApp;
-import chatroom.server.ServerThread;
+import chatroom.server.ServerImpl;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -11,27 +12,124 @@ import java.net.Socket;
 import java.util.HashMap;
 
 public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.IServerSocket {
-    private IServerApp app;
+    private IServerApp app= new ServerImpl();
     private Socket socket;
-    private HashMap<Long, ServerThread> threads = new HashMap<>();
+    static long count = 1L;
+    private final HashMap<Long, ServerThread> threads = new HashMap<>();
 
     public ServerSocketImpl() throws IOException {
-        System.out.println("服务端启动");
-        this.setReuseAddress(true);
-        this.bind(new InetSocketAddress(8888));
-        while (true) {
-            try {
+        try {
+            System.out.println("服务端启动");
+            this.setReuseAddress(true);
+            this.bind(new InetSocketAddress(8888));
+            while (true) {
                 socket = this.accept();
                 System.out.println("客户端进入");
                 final ServerThread task = new ServerThread(socket);
                 threads.put(task.getClient(), task);
-            } catch (Exception e) {
-                e.printStackTrace();
+                task.start();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public static void main(String args[]) throws IOException {
+    class ServerThread extends Thread {
+        private Socket socket;
+        private long client;
+        boolean runFlag = true;
+
+        public ServerThread(Socket socket) {
+            if (socket == null) {
+                runFlag = false;
+                app.onUserLogout(client);
+                return;
+            }
+            this.socket = socket;
+            this.client = count++;
+            ReadThread readThread = new ReadThread();
+            readThread.start();
+        }
+
+        public Socket getSocket() {
+            return this.socket;
+        }
+
+        public long getClient() {
+            return this.client;
+        }
+
+        class ReadThread extends Thread {
+            boolean runFlag = true;
+            ObjectInputStream in;
+
+            public void run() {
+                try {
+                    in = new ObjectInputStream(socket.getInputStream());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                while (runFlag) {
+                    if (socket.isClosed()) {
+                        return;
+                    }
+                    try {
+                        Object obj = in.readObject();
+                        if (obj instanceof clientMsgModel.c1) {
+                            clientMsgModel.c1 msg = ((clientMsgModel.c1) obj);
+                            System.out.println("Client receive msg(type c1)");
+                            //todo deal with app == null's probelm
+                            app.onRequestLogin(client,msg.getUsername(), msg.getPasswordMd5());
+                        } else if (obj instanceof clientMsgModel.c2) {
+                            clientMsgModel.c2 msg = ((clientMsgModel.c2) obj);
+                            System.out.println("Client receive msg(type c2)");
+                            app.onRequestUserList(client);
+                        } else if (obj instanceof clientMsgModel.c3) {
+                            clientMsgModel.c3 msg = ((clientMsgModel.c3) obj);
+                            System.out.println("Client receive msg(type c3)");
+                            app.onRequestGroupList(client);
+                        } else if (obj instanceof clientMsgModel.c4) {
+                            clientMsgModel.c4 msg = ((clientMsgModel.c4) obj);
+                            System.out.println("Client receive msg(type c4)");
+                            app.onRequestCreateGroup(client, msg.getGroupName());
+                        } else if (obj instanceof clientMsgModel.c5) {
+                            clientMsgModel.c5 msg = ((clientMsgModel.c5) obj);
+                            System.out.println("Client receive msg(type c5)");
+                            app.onRequestJoinGroup(client, msg.getGroupId());
+                        } else if (obj instanceof clientMsgModel.c6) {
+                            clientMsgModel.c6 msg = ((clientMsgModel.c6) obj);
+                            System.out.println("Client receive msg(type c6)");
+                            app.onRequestInvite(client, msg.getGroupId(), msg.getUserId());
+                        } else if (obj instanceof clientMsgModel.c7) {
+                            clientMsgModel.c7 msg = ((clientMsgModel.c7) obj);
+                            System.out.println("Client receive msg(type c7)");
+                            app.onRequestLeaveGroup(client, msg.getGroupId());
+                        } else if (obj instanceof clientMsgModel.c8) {
+                            clientMsgModel.c8 msg = ((clientMsgModel.c8) obj);
+                            System.out.println("Client receive msg(type c8)");
+                            app.onRequestSendMessage(client, msg.getGroupId(), msg.getMsg());
+                        } else if (obj instanceof clientMsgModel.c9) {
+                            clientMsgModel.c9 msg = ((clientMsgModel.c9) obj);
+                            System.out.println("Client receive msg(type c9)");
+                            app.onOtherRequestJoinGroupReplied(client, msg.getReqId(), msg.isAgree());
+                        } else {
+                            clientMsgModel.cA msg = ((clientMsgModel.cA) obj);
+                            System.out.println("Client receive msg(type cA)");
+                            app.onRequestGroupMemberList(client, msg.getGroupId());
+                        }
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
+
+    public static void main(String[] args) throws IOException {
         ServerSocketImpl client = new ServerSocketImpl();
     }
 
@@ -48,11 +146,7 @@ public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.
         objectOutputStream.writeObject(object);
         objectOutputStream.flush();
     }
-    //Todo 判断收到对象类型进行对应操作
-    public void getMsg() throws IOException {
-        InputStream in = this.socket.getInputStream();
-        ObjectInputStream msg = new ObjectInputStream(in);
-    }
+
 
     @Override
     public void bind(IServerApp app) {
