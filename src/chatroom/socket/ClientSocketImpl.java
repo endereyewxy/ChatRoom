@@ -3,10 +3,9 @@ package chatroom.socket;
 import chatroom.model.clientMsgModel;
 import chatroom.protocol.IClientApp;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
     private IClientApp app;
@@ -14,12 +13,13 @@ public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
     public Socket socket;
 
     public ClientSocketImpl() throws IOException {
-        System.out.println("客户端启动");
-        try {
-            socket = new Socket("127.0.0.1", 8888);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            System.out.println("客户端启动");
+            try {
+                socket = new Socket("127.0.0.1", 8888);
+                //todo 启动gui
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
     }
 
@@ -32,6 +32,11 @@ public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
         objectOutputStream.writeObject(object);
         objectOutputStream.flush();
+    }
+    //Todo 判断收到对象类型进行对应操作
+    public void getMsg() throws IOException {
+        InputStream in = this.socket.getInputStream();
+        ObjectInputStream msg = new ObjectInputStream(in);
     }
 
     @Override

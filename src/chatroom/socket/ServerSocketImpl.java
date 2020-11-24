@@ -48,6 +48,11 @@ public class ServerSocketImpl extends ServerSocket implements chatroom.protocol.
         objectOutputStream.writeObject(object);
         objectOutputStream.flush();
     }
+    //Todo 判断收到对象类型进行对应操作
+    public void getMsg() throws IOException {
+        InputStream in = this.socket.getInputStream();
+        ObjectInputStream msg = new ObjectInputStream(in);
+    }
 
     @Override
     public void bind(IServerApp app) {
