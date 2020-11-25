@@ -8,10 +8,10 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
-    private IClientApp app;
+    private IClientApp app;    //todo
     public Socket socket;
 
-    public ClientSocketImpl(){
+    public ClientSocketImpl() {
         System.out.println("客户端启动");
         try {
             socket = new Socket("127.0.0.1", 8888);
@@ -26,18 +26,15 @@ public class ClientSocketImpl implements chatroom.protocol.IClientSocket {
     class ReadThread extends Thread {
         boolean runFlag = true;
         ObjectInputStream in;
-
         public void run() {
-            try {
-                in = new ObjectInputStream(socket.getInputStream());
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
             while (runFlag) {
                 if (socket.isClosed()) {
                     return;
                 }
                 try {
+                    if(socket.getInputStream().available()==0)
+                        continue;
+                    in = new ObjectInputStream(socket.getInputStream());
                     Object obj = in.readObject();
                     if (obj instanceof serverMsgModel.s1) {
                         serverMsgModel.s1 msg = ((serverMsgModel.s1) obj);
