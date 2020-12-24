@@ -123,7 +123,6 @@ public class UIMain implements Initializable {
             return;
 
         final TextInputDialog inputDialog = new TextInputDialog();
-        inputDialog.setHeaderText("提示");
         inputDialog.setContentText("请输入新建会话名称：");
         inputDialog.showAndWait();
 
@@ -165,7 +164,6 @@ public class UIMain implements Initializable {
             } else {
                 chat.getEngine().loadContent("");
                 final Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setHeaderText("警告");
                 alert.setContentText("你不在此会话中");
                 alert.showAndWait();
             }
@@ -201,7 +199,6 @@ public class UIMain implements Initializable {
 
     public void notifyChatJoinRequest(int userUuid, int chatUuid) {
         final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setHeaderText("提示");
         alert.setContentText("用户" +
                              userMap.get(userUuid).getUsername() +
                              "请求加入会话" + chatMap.get(chatUuid).getName() +
