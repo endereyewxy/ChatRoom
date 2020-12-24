@@ -86,6 +86,7 @@ public class Server implements IServer {
         if (matched != null) {
             u2c.put(matched.getUuid(), client);
             c2u.put(client, matched);
+            userList.set(matched.getUuid() - 1, matched);
             socket.notifySignInSucceeded(client, matched.getUuid());
             for (int cli : c2u.keySet())
                 acquireUserList(cli);

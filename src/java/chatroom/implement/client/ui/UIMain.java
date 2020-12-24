@@ -129,7 +129,7 @@ public class UIMain implements Initializable {
     public void sendMessage(ActionEvent actionEvent) {
         try {
             final Chat chat = chatView.getSelectionModel().getSelectedItem();
-            if (chat != null && !text.getText().isEmpty()) {
+            if (chat != null && !text.getText().isEmpty() && history.containsKey(chat.getUuid())) {
                 socket.requestSendMessage(chat.getUuid(), text.getText());
                 text.clear();
             }
