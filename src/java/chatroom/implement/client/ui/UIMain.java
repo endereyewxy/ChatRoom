@@ -134,7 +134,7 @@ public class UIMain implements Initializable {
     @SuppressWarnings("unused")
     public void chatChanged(MouseEvent mouseEvent) {
         final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
-        if (chatObj != null) {
+        if (chatObj != null && history.containsKey(chatObj.getUuid())) {
             final StringBuilder builder = new StringBuilder();
             for (final Pair<String, String> line : history.get(chatObj.getUuid()))
                 builder.append("<p>")
