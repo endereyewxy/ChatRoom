@@ -85,6 +85,6 @@ public class UIClient extends Application {
     }
 
     public static void notifyMessageReceived(int userUuid, int chatUuid, String text) {
-        mainController.addHistory(userUuid, chatUuid, text);
+        Platform.runLater(() -> mainController.addHistory(userUuid, chatUuid, text));
     }
 }
