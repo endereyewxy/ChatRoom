@@ -83,7 +83,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     @Override
     public void notifyMessageReceived(int client, int userUuid, int chatUuid, String text) throws IOException {
         ByteOStream oStream = oStreams.get(client);
-        oStream.writeByte((byte) 0x07);
+        oStream.writeByte((byte) 0x06);
         oStream.writeUuid(userUuid);
         oStream.writeUuid(chatUuid);
         oStream.writeString(text);
@@ -93,6 +93,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     private void createThread(int client) {
         final ByteIStream iStream = iStreams.get(client);
         new Thread(() -> {
+            Log.socket("%d online", client);
             try {
                 while (true) {
                     final byte control = iStream.readByte();
@@ -138,6 +139,9 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            iStreams.remove(client);
+            oStreams.remove(client);
+            Log.socket("%d offline", client);
         }).start();
     }
 }

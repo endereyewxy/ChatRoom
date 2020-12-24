@@ -4,33 +4,36 @@ import chatroom.protocols.IClientSocket;
 import chatroom.protocols.entity.Chat;
 import chatroom.protocols.entity.User;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebView;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UIMain implements Initializable {
     private IClientSocket socket;
-
-    int  myUuid;
-    User myUser;
+    private int           myUuid;
 
     @FXML
     private WebView        chat;
+    @FXML
+    private TextArea       text;
     @FXML
     private ListView<User> userView;
     @FXML
     private ListView<Chat> chatView;
 
-    @FXML
-    private Button btnCreateChat;
+    private final HashMap<Integer, User> userMap = new HashMap<>();
 
-    ObservableList<User> taskCreateChatMembers = null;
+    private final HashMap<Integer, LinkedList<Pair<String, String>>> history = new HashMap<>();
 
     public void setSocket(IClientSocket client) {
         this.socket = client;
@@ -45,16 +48,32 @@ public class UIMain implements Initializable {
         list.clear();
         list.addAll(users);
 
-        for (final User user : users) {
-            if (myUuid == user.getUuid())
-                myUser = user;
-        }
+        userMap.clear();
+        for (final User user : users)
+            userMap.put(user.getUuid(), user);
     }
 
     public void setChatList(Chat[] chats) {
         final ObservableList<Chat> list = chatView.getItems();
         list.clear();
         list.addAll(chats);
+
+        for (final Chat chat : chats)
+            history.putIfAbsent(chat.getUuid(), new LinkedList<>());
+
+        final Set<Integer> visited = Arrays.stream(chats).map(Chat::getUuid).collect(Collectors.toSet());
+        for (final int key : history.keySet()) {
+            if (!visited.contains(key))
+                history.remove(key);
+        }
+    }
+
+    public void addHistory(int userUuid, int chatUuid, String text) {
+        history.get(chatUuid).add(new Pair<>(userMap.get(userUuid).getUsername(), text));
+
+        final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
+        if (chatObj != null && chatObj.getUuid() == chatUuid)
+            chatChanged(null);
     }
 
     @Override
@@ -62,10 +81,8 @@ public class UIMain implements Initializable {
         userView.setCellFactory(userListView -> new ListCell<User>() {
             @Override
             protected void updateItem(User user, boolean empty) {
-                if (user == null || user.getUuid() != myUuid) {
-                    super.updateItem(user, empty);
-                    setText(user == null ? "" : user.getUsername());
-                }
+                super.updateItem(user, empty);
+                setText(user == null ? "" : user.getUsername());
             }
         });
         userView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -76,39 +93,60 @@ public class UIMain implements Initializable {
                 setText(chat == null ? "" : chat.getName());
             }
         });
+        chat.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == Worker.State.SUCCEEDED)
+                chat.getEngine().executeScript("window.scrollTo(0, document.body.scrollHeight);");
+        });
     }
 
     @SuppressWarnings("unused")
     public void createChat(ActionEvent actionEvent) {
-        taskCreateChatMembers = userView.getSelectionModel().getSelectedItems();
+        final ArrayList<User> list = new ArrayList<>(userView.getSelectionModel().getSelectedItems());
+        list.removeIf(user -> user.getUuid() == myUuid);
 
-        int hasMyself = 0;
-        for (final User user : taskCreateChatMembers) {
-            if (user.getUuid() == myUuid) {
-                hasMyself = 1;
-                break;
-            }
-        }
-
-        if (taskCreateChatMembers.size() < 1 + hasMyself)
+        if (list.isEmpty())
             return;
 
         final String name;
-        if (taskCreateChatMembers.size() > 1 + hasMyself) {
+        if (list.size() > 1) {
             final TextInputDialog inputDialog = new TextInputDialog();
             inputDialog.setHeaderText("新建群组名称");
             inputDialog.show();
             name = inputDialog.getContentText();
         } else {
-            name = myUser.getUsername() + " - " + taskCreateChatMembers.get(0).getUsername();
+            name = list.get(0).getUsername();
         }
 
-        btnCreateChat.setText("正在创建……");
-        btnCreateChat.setDisable(true);
         try {
             socket.requestCreateChat(name);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void sendMessage(ActionEvent actionEvent) {
+        try {
+            final Chat chat = chatView.getSelectionModel().getSelectedItem();
+            if (chat != null && !text.getText().isEmpty())
+                socket.requestSendMessage(chat.getUuid(), text.getText());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void chatChanged(MouseEvent mouseEvent) {
+        final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
+        if (chatObj != null) {
+            final StringBuilder builder = new StringBuilder();
+            for (final Pair<String, String> line : history.get(chatObj.getUuid()))
+                builder.append("<p>")
+                       .append(line.getKey())
+                       .append("</p><p>")
+                       .append(line.getValue())
+                       .append("<p>");
+            chat.getEngine().loadContent(builder.toString());
         }
     }
 }

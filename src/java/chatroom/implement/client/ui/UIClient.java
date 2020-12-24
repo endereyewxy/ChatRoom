@@ -2,7 +2,6 @@ package chatroom.implement.client.ui;
 
 import chatroom.protocols.IClientSocket;
 import chatroom.protocols.entity.Chat;
-import chatroom.protocols.entity.Flag;
 import chatroom.protocols.entity.User;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -86,5 +85,6 @@ public class UIClient extends Application {
     }
 
     public static void notifyMessageReceived(int userUuid, int chatUuid, String text) {
+        mainController.addHistory(userUuid, chatUuid, text);
     }
 }

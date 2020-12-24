@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
-
-<AnchorPane prefHeight="626.0" prefWidth="796.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatroom.implement.client.ui.UIMain">
+<AnchorPane prefHeight="626.0" prefWidth="796.0" xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatroom.implement.client.ui.UIMain">
     <children>
-        <SplitPane dividerPositions="0.29797979797979796" layoutX="238.0" layoutY="144.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <SplitPane dividerPositions="0.29797979797979796" layoutX="238.0" layoutY="144.0" prefHeight="160.0"
+                   prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                     <children>
-                        <SplitPane dividerPositions="0.5" layoutX="14.0" layoutY="112.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <SplitPane dividerPositions="0.5" layoutX="14.0" layoutY="112.0" orientation="VERTICAL"
+                                   prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0"
+                                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <items>
                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                     <children>
-                                        <ListView fx:id="userView" layoutY="76.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                        <ListView fx:id="userView" layoutY="76.0" prefHeight="200.0" prefWidth="200.0"
+                                                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                                     </children>
                                 </AnchorPane>
                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                     <children>
-                                        <ListView fx:id="chatView" layoutX="16.0" layoutY="65.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                        <ListView fx:id="chatView" layoutX="16.0" layoutY="65.0"
+                                                  onMouseClicked="#chatChanged" prefHeight="200.0" prefWidth="200.0"
+                                                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                                     </children>
                                 </AnchorPane>
                             </items>
@@ -35,37 +37,50 @@
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                     <children>
-                        <BorderPane layoutX="140.0" layoutY="79.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <BorderPane layoutX="140.0" layoutY="79.0" prefHeight="200.0" prefWidth="200.0"
+                                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <bottom>
                                 <GridPane BorderPane.alignment="CENTER">
                                     <columnConstraints>
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                                     </rowConstraints>
                                     <children>
-                                        <Button fx:id="btnCreateChat" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createChat" text="创建群组" />
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="退出群组" GridPane.columnIndex="2" />
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="加入群组" GridPane.columnIndex="1" />
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="发送" GridPane.columnIndex="3" />
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false"
+                                                onAction="#createChat" text="创建群组"/>
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="退出群组"
+                                                GridPane.columnIndex="2"/>
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="加入群组"
+                                                GridPane.columnIndex="1"/>
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false"
+                                                onAction="#sendMessage" text="发送" GridPane.columnIndex="3"/>
                                     </children>
                                 </GridPane>
                             </bottom>
                             <center>
-                                <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
+                                <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0"
+                                           prefWidth="160.0" BorderPane.alignment="CENTER">
                                     <items>
                                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                             <children>
-                                                <WebView fx:id="chat" layoutX="204.0" layoutY="69.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                <WebView fx:id="chat" layoutX="204.0" layoutY="69.0" prefHeight="200.0"
+                                                         prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.topAnchor="0.0"/>
                                             </children>
                                         </AnchorPane>
                                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                             <children>
-                                                <TextArea layoutX="104.0" layoutY="46.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                <TextArea fx:id="text" layoutX="104.0" layoutY="46.0" prefHeight="200.0"
+                                                          prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+                                                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                          AnchorPane.topAnchor="0.0"/>
                                             </children>
                                         </AnchorPane>
                                     </items>
