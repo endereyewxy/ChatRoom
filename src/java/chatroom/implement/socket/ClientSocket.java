@@ -50,7 +50,7 @@ public class ClientSocket extends Socket implements IClientSocket {
                         case 0x07:
                             final int userUuid_ = iStream.readUuid();
                             final int chatUuid_ = iStream.readUuid();
-                            client.notifyMessageReceived(userUuid_, chatUuid_, iStream.readMessageString());
+                            client.notifyMessageReceived(userUuid_, chatUuid_, iStream.readString());
                             break;
                         default:
                             Log.socket("Ignoring unknown control byte %02x", control);
@@ -90,15 +90,15 @@ public class ClientSocket extends Socket implements IClientSocket {
     @Override
     public void requestSignIn(String username, String password) throws IOException {
         oStream.writeByte((byte) 0x04);
-        oStream.writeFixedString(username);
-        oStream.writeFixedString(password);
+        oStream.writeString(username);
+        oStream.writeString(password);
         oStream.flush();
     }
 
     @Override
     public void requestCreateChat(String name) throws IOException {
         oStream.writeByte((byte) 0x05);
-        oStream.writeFixedString(name);
+        oStream.writeString(name);
         oStream.flush();
     }
 
@@ -122,7 +122,7 @@ public class ClientSocket extends Socket implements IClientSocket {
     public void requestSendMessage(int chatUuid, String text) throws IOException {
         oStream.writeByte((byte) 0x08);
         oStream.writeUuid(chatUuid);
-        oStream.writeMessageString(text);
+        oStream.writeString(text);
         oStream.flush();
     }
 }

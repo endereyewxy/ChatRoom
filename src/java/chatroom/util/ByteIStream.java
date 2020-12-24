@@ -3,10 +3,10 @@ package chatroom.util;
 import chatroom.protocols.entity.Chat;
 import chatroom.protocols.entity.User;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.function.IntFunction;
 
 public class ByteIStream {
@@ -17,58 +17,32 @@ public class ByteIStream {
     }
 
     public byte readByte() throws IOException {
-        final int data = inputStream.read();
-        if (data == -1)
-            throw new EOFException();
-        Log.stream("<= 001B %02x", data);
-        return (byte) data;
+        return read(1)[0];
     }
 
     public int readUuid() throws IOException {
-        final byte[] bytes = new byte[4];
-        if (inputStream.read(bytes) != 4)
-            throw new EOFException();
-        final int data = (bytes[0] << 0x18) |
-                         (bytes[1] << 0x10) |
-                         (bytes[2] << 0x08) | bytes[3];
-        Log.stream("<= 004B %d", data);
-        return data;
+        final byte[] data = read(4);
+        return Log.stream("<= %d", (data[0] << 0x18) |
+                                   (data[1] << 0x10) |
+                                   (data[2] << 0x08) | data[3]);
     }
 
-    public int readArrayLength() throws IOException {
-        return readUuid();
-    }
-
-    public String readFixedString() throws IOException {
-        final byte[] bytes = new byte[16];
-        if (inputStream.read(bytes) != bytes.length)
-            throw new EOFException();
-        final String data = new String(bytes, StandardCharsets.UTF_8);
-        Log.stream("<= 016B \"%s\"", data);
-        return data;
-    }
-
-    public String readMessageString() throws IOException {
-        final int    length = readArrayLength();
-        final byte[] bytes  = new byte[length];
-        if (inputStream.read(bytes) != length)
-            throw new EOFException();
-        final String data = new String(bytes, StandardCharsets.UTF_8);
-        Log.stream("<= %03dB \"%s\"", length, data);
-        return data;
+    public String readString() throws IOException {
+        final int length = readUuid();
+        return Log.stream("<= \"%s\"", new String(read(length), StandardCharsets.UTF_8));
     }
 
     public User readUser() throws IOException {
         final int    uuid = readUuid();
         final byte   flag = readByte();
-        final String name = readFixedString();
+        final String name = readString();
         return new User(uuid, flag, name, "");
     }
 
     public Chat readChat() throws IOException {
         final int    uuid = readUuid();
         final byte   flag = readByte();
-        final String name = readFixedString();
+        final String name = readString();
         return new Chat(uuid, flag, name, 0, null);
     }
 
@@ -78,9 +52,21 @@ public class ByteIStream {
     }
 
     public <T> T[] readArray(IntFunction<T[]> newer, Operation<T> operation) throws IOException {
-        final T[] array = newer.apply(readArrayLength());
+        final T[] array = newer.apply(readUuid());
         for (int i = 0; i < array.length; i++)
             array[i] = operation.read();
         return array;
+    }
+
+    private byte[] read(int length) throws IOException {
+        final byte[] buffer = new byte[length];
+        while (true) {
+            final int actual = inputStream.read(buffer);
+            Log.stream("<= %s", Arrays.toString(buffer));
+            if (actual == length)
+                break;
+            Log.stream("<! Ignoring because %d (actual) != %d (expected)", actual, length);
+        }
+        return buffer;
     }
 }
