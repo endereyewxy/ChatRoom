@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -74,18 +75,27 @@ public class UIClient extends Application {
     }
 
     public static void notifySignInSucceeded(int userUuid) {
-        mainController.setMyUuid(userUuid);
-        try {
-            socket.acquireUserList();
-            socket.acquireChatList();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (userUuid > 0) {
+            mainController.setMyUuid(userUuid);
+            try {
+                socket.acquireUserList();
+                socket.acquireChatList();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(() -> {
+                primaryStage.setTitle("多人聊天系统");
+                primaryStage.setScene(new Scene(mainWindow));
+                primaryStage.show();
+            });
+        } else {
+            Platform.runLater(() -> {
+                final Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("错误");
+                alert.setContentText("登录失败");
+                alert.showAndWait();
+            });
         }
-        Platform.runLater(() -> {
-            primaryStage.setTitle("多人聊天系统");
-            primaryStage.setScene(new Scene(mainWindow));
-            primaryStage.show();
-        });
     }
 
     public static void notifyChatJoinRequest(int userUuid, int chatUuid) {

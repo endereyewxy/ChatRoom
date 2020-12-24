@@ -92,6 +92,8 @@ public class Server implements IServer {
             socket.notifySignInSucceeded(client, matched.getUuid());
             for (int cli : c2u.keySet())
                 acquireUserList(cli);
+        } else {
+            socket.notifySignInSucceeded(client, 0);
         }
     }
 
@@ -140,7 +142,9 @@ public class Server implements IServer {
 
     @Override
     public void requestSendMessage(int client, int chatUuid, String text) throws IOException {
-        for (final int userUuid : chatList.get(chatUuid - 1).getMembers())
-            socket.notifyMessageReceived(u2c.get(userUuid), c2u.get(client).getUuid(), chatUuid, text);
+        for (final int userUuid : chatList.get(chatUuid - 1).getMembers()) {
+            if (u2c.containsKey(userUuid))
+                socket.notifyMessageReceived(u2c.get(userUuid), c2u.get(client).getUuid(), chatUuid, text);
+        }
     }
 }
