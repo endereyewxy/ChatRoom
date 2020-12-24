@@ -2,13 +2,11 @@ package chatroom.model;
 
 import java.io.Serializable;
 
-public class serverMsgModel {
+public class ServerMsgModel {
     public static class s1 implements Serializable {
-        private byte type;
-        private long userId;
+        private final long userId;
 
         public s1(long userId) {
-            this.type = 'i';
             this.userId = userId;
         }
 
@@ -17,13 +15,11 @@ public class serverMsgModel {
         }
     }
 
-    public static class s2 implements Serializable{
-        private byte type;
-        private Long[] userId;
-        private String[] usernames;
+    public static class s2 implements Serializable {
+        private final Long[]   userId;
+        private final String[] usernames;
 
         public s2(Long[] userId, String[] usernames) {
-            this.type = 'u';
             this.userId = userId;
             this.usernames = usernames;
         }
@@ -37,14 +33,12 @@ public class serverMsgModel {
         }
     }
 
-    public static class s3 implements Serializable{
-        private byte type;
-        private Long[] groupIds;
-        private String[] groupNames;
-        private Byte[] flags;
+    public static class s3 implements Serializable {
+        private final Long[]   groupIds;
+        private final String[] groupNames;
+        private final Byte[]   flags;
 
         public s3(Long[] groupIds, String[] groupNames, Byte[] flags) {
-            this.type = 'g';
             this.groupIds = groupIds;
             this.groupNames = groupNames;
             this.flags = flags;
@@ -63,12 +57,12 @@ public class serverMsgModel {
         }
     }
 
-    public static class s4 implements Serializable{
-        private byte type;
-        private long groupId, userId, reqId;
+    public static class s4 implements Serializable {
+        private final long groupId;
+        private final long userId;
+        private final long reqId;
 
         public s4(long groupId, long userId, long reqId) {
-            this.type = 'o';
             this.groupId = groupId;
             this.userId = userId;
             this.reqId = reqId;
@@ -87,12 +81,11 @@ public class serverMsgModel {
         }
     }
 
-    public static class s5 implements Serializable{
-        private byte type, flags;
-        private long userId;
+    public static class s5 implements Serializable {
+        private final byte flags;
+        private final long userId;
 
         public s5(byte flags, long userId) {
-            this.type = 'j';
             this.flags = flags;
             this.userId = userId;
         }
@@ -106,12 +99,10 @@ public class serverMsgModel {
         }
     }
 
-    public static class s6 implements Serializable{
-        private byte type;
-        private long groupId;
+    public static class s6 implements Serializable {
+        private final long groupId;
 
         public s6(long groupId) {
-            this.type = 'e';
             this.groupId = groupId;
         }
 
@@ -120,13 +111,12 @@ public class serverMsgModel {
         }
     }
 
-    public static class s7 implements Serializable{
-        private byte type;
-        private long groupId, userId;
-        private String msg;
+    public static class s7 implements Serializable {
+        private final long   groupId;
+        private final long   userId;
+        private final String msg;
 
         public s7(long groupId, long userId, String msg) {
-            this.type = 'm';
             this.groupId = groupId;
             this.userId = userId;
             this.msg = msg;
@@ -145,15 +135,13 @@ public class serverMsgModel {
         }
     }
 
-    public static class s8 implements Serializable{
-        private byte type;
-        private Long groupId;
-        private Long[] userIds;
-        private String[] usernames;
-        private Byte[] flags;
+    public static class s8 implements Serializable {
+        private final Long     groupId;
+        private final Long[]   userIds;
+        private final String[] usernames;
+        private final Byte[]   flags;
 
         public s8(long groupId, Long[] userIds, String[] usernames, Byte[] flags) {
-            this.type = 'b';
             this.groupId = groupId;
             this.userIds = userIds;
             this.usernames = usernames;
@@ -168,36 +156,12 @@ public class serverMsgModel {
             return userIds;
         }
 
-        public byte getType() {
-            return type;
-        }
-
-        public void setType(byte type) {
-            this.type = type;
-        }
-
-        public void setGroupId(Long groupId) {
-            this.groupId = groupId;
-        }
-
-        public void setUserId(Long[] userIds) {
-            this.userIds = userIds;
-        }
-
         public String[] getUsernames() {
             return usernames;
         }
 
-        public void setUsernames(String[] usernames) {
-            this.usernames = usernames;
-        }
-
         public Byte[] getFlags() {
             return flags;
-        }
-
-        public void setFlags(Byte[] flags) {
-            this.flags = flags;
         }
     }
 
