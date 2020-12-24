@@ -32,6 +32,7 @@ public class UIMain implements Initializable {
     private ListView<Chat> chatView;
 
     private final HashMap<Integer, User> userMap = new HashMap<>();
+    private final HashMap<Integer, Chat> chatMap = new HashMap<>();
 
     private final HashMap<Integer, LinkedList<Pair<String, String>>> history = new HashMap<>();
 
@@ -66,6 +67,10 @@ public class UIMain implements Initializable {
             if (!visited.contains(key))
                 history.remove(key);
         }
+
+        chatMap.clear();
+        for (final Chat chat : chats)
+            chatMap.put(chat.getUuid(), chat);
     }
 
     public void addHistory(int userUuid, int chatUuid, String text) {
@@ -108,7 +113,8 @@ public class UIMain implements Initializable {
             return;
 
         final TextInputDialog inputDialog = new TextInputDialog();
-        inputDialog.setHeaderText("新建会话名称");
+        inputDialog.setHeaderText("提示");
+        inputDialog.setContentText("请输入新建会话名称：");
         inputDialog.showAndWait();
 
         try {
@@ -143,6 +149,12 @@ public class UIMain implements Initializable {
                        .append(line.getValue())
                        .append("<p>");
             chat.getEngine().loadContent(builder.toString());
+        } else {
+            chat.getEngine().loadContent("");
+            final Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("提示");
+            alert.setContentText("你不在此会话中");
+            alert.showAndWait();
         }
     }
 
@@ -150,9 +162,10 @@ public class UIMain implements Initializable {
     public void quitChat(ActionEvent actionEvent) {
         try {
             final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
-            if (chatObj != null) {
+            if (chatObj != null && history.containsKey(chatObj.getUuid())) {
                 socket.requestQuitChat(myUuid, chatObj.getUuid());
                 chat.getEngine().loadContent("");
+                history.remove(chatObj.getUuid());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -163,10 +176,28 @@ public class UIMain implements Initializable {
     public void joinChat(ActionEvent actionEvent) {
         try {
             final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
-            if (chatObj != null)
+            if (chatObj != null && history.containsKey(chatObj.getUuid()))
                 socket.requestJoinChat(myUuid, chatObj.getUuid());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void notifyChatJoinRequest(int userUuid, int chatUuid) {
+        final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("提示");
+        alert.setContentText("用户" +
+                             userMap.get(userUuid).getUsername() +
+                             "请求加入会话" + chatMap.get(chatUuid).getName() +
+                             "，是否同意？");
+        alert.showAndWait();
+
+        if (alert.getResult() == ButtonType.OK) {
+            try {
+                socket.requestJoinChat(userUuid, chatUuid);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

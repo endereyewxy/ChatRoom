@@ -82,6 +82,7 @@ public class UIClient extends Application {
     }
 
     public static void notifyChatJoinRequest(int userUuid, int chatUuid) {
+        Platform.runLater(() -> mainController.notifyChatJoinRequest(userUuid, chatUuid));
     }
 
     public static void notifyMessageReceived(int userUuid, int chatUuid, String text) {
