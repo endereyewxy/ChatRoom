@@ -53,11 +53,11 @@
                                     </rowConstraints>
                                     <children>
                                         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false"
-                                                onAction="#createChat" text="创建群组"/>
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="退出群组"
-                                                GridPane.columnIndex="2"/>
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="加入群组"
-                                                GridPane.columnIndex="1"/>
+                                                onAction="#createChat" text="发起会话"/>
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false"
+                                                onAction="#quitChat" text="离开会话" GridPane.columnIndex="2"/>
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false"
+                                                onAction="#joinChat" text="加入会话" GridPane.columnIndex="1"/>
                                         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false"
                                                 onAction="#sendMessage" text="发送" GridPane.columnIndex="3"/>
                                     </children>

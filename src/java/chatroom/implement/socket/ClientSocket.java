@@ -92,9 +92,10 @@ public class ClientSocket extends Socket implements IClientSocket {
     }
 
     @Override
-    public void requestCreateChat(String name) throws IOException {
+    public void requestCreateChat(String name, User[] users) throws IOException {
         oStream.writeByte((byte) 0x05);
         oStream.writeString(name);
+        oStream.writeArray(users, oStream::writeUser);
         oStream.flush();
     }
 

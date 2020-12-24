@@ -1,5 +1,7 @@
 package chatroom.protocols;
 
+import chatroom.protocols.entity.User;
+
 import java.io.IOException;
 
 public interface IServer {
@@ -13,7 +15,7 @@ public interface IServer {
 
     void requestSignIn(int client, String username, String password) throws IOException;
 
-    void requestCreateChat(int client, String name) throws IOException;
+    void requestCreateChat(int client, String name, User[] users) throws IOException;
 
     void requestJoinChat(int client, int userUuid, int chatUuid) throws IOException;
 

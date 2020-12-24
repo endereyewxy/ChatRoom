@@ -107,18 +107,12 @@ public class UIMain implements Initializable {
         if (list.isEmpty())
             return;
 
-        final String name;
-        if (list.size() > 1) {
-            final TextInputDialog inputDialog = new TextInputDialog();
-            inputDialog.setHeaderText("新建群组名称");
-            inputDialog.show();
-            name = inputDialog.getContentText();
-        } else {
-            name = list.get(0).getUsername();
-        }
+        final TextInputDialog inputDialog = new TextInputDialog();
+        inputDialog.setHeaderText("新建会话名称");
+        inputDialog.show();
 
         try {
-            socket.requestCreateChat(name);
+            socket.requestCreateChat(inputDialog.getContentText(), list.toArray(new User[0]));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -147,6 +141,28 @@ public class UIMain implements Initializable {
                        .append(line.getValue())
                        .append("<p>");
             chat.getEngine().loadContent(builder.toString());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void quitChat(ActionEvent actionEvent) {
+        try {
+            final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
+            if (chatObj != null)
+                socket.requestQuitChat(myUuid, chatObj.getUuid());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void joinChat(ActionEvent actionEvent) {
+        try {
+            final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
+            if (chatObj != null)
+                socket.requestJoinChat(myUuid, chatObj.getUuid());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

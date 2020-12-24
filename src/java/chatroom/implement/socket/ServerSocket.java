@@ -115,7 +115,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
                             break;
                         case 0x05:
                             final String name = iStream.readString();
-                            server.requestCreateChat(client, name);
+                            server.requestCreateChat(client, name, iStream.readArray(User[]::new, iStream::readUser));
                             break;
                         case 0x06:
                             final int userUuid_ = iStream.readUuid();

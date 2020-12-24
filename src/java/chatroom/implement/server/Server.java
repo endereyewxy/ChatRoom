@@ -9,10 +9,7 @@ import chatroom.util.MD5;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Scanner;
+import java.util.*;
 
 public class Server implements IServer {
     private IServerSocket socket;
@@ -53,13 +50,16 @@ public class Server implements IServer {
 
     @Override
     public void acquireChatList(int client) throws IOException {
-        socket.replyChatList(client, chatList.toArray(new Chat[0]));
+        socket.replyChatList(client, chatList.stream()
+                                             .filter(Objects::nonNull)
+                                             .toArray(Chat[]::new));
     }
 
     @Override
     public void acquireChatMemberList(int client, int chatUuid) throws IOException {
         final Chat chat = chatList.get(chatUuid - 1);
         socket.replyChatMemberList(client, chat.getMembers().stream()
+                                               .filter(Objects::nonNull)
                                                .map(uuid -> userList.get(uuid - 1))
                                                .map(user -> user.shadow(Flag.of(user, chat)))
                                                .toArray(User[]::new));
@@ -84,10 +84,12 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestCreateChat(int client, String name) throws IOException {
+    public void requestCreateChat(int client, String name, User[] users) throws IOException {
         final User user = c2u.get(client);
         final Chat chat = new Chat(chatList.size() + 1, (byte) 0, name, user.getUuid(), new HashSet<>());
         chat.getMembers().add(user.getUuid());
+        for (final User u : users)
+            chat.getMembers().add(u.getUuid());
         chatList.add(chat);
         for (int cli : c2u.keySet())
             acquireChatList(cli);
@@ -108,17 +110,20 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestQuitChat(int client, int userUuid, int chatUuid) {
+    public void requestQuitChat(int client, int userUuid, int chatUuid) throws IOException {
         final User user = c2u.get(client);
         final Chat chat = chatList.get(chatUuid - 1);
 
         if (!chat.getMembers().contains(userUuid))
             return;
 
-        if (user.getUuid() == chat.getCreator() && userUuid != user.getUuid())
+        if (user.getUuid() == chat.getCreator() && user.getUuid() == userUuid) {
+            chatList.set(chatUuid - 1, null);
+            for (int cli : c2u.keySet())
+                acquireChatList(cli);
+        } else if (user.getUuid() == chat.getCreator() || user.getUuid() == userUuid) {
             chat.getMembers().remove(userUuid);
-        else if (user.getUuid() == userUuid)
-            chat.getMembers().remove(userUuid);
+        }
     }
 
     @Override
