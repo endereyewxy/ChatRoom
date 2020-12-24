@@ -30,8 +30,9 @@ public class ByteOStream {
     }
 
     public void writeString(String data) throws IOException {
-        writeUuid(data.length());
-        outputStream.write(data.getBytes(StandardCharsets.UTF_8));
+        final byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+        writeUuid(bytes.length);
+        outputStream.write(bytes);
         Log.stream("=> \"%s\"", data);
     }
 
