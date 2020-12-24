@@ -40,38 +40,69 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     }
 
     @Override
-    public void replyUserList(int client, User[] users) {
-        // TODO
+    public void replyUserList(int client, User[] users) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x01);
+        for (User user : users) {
+            oStream.writeUser(user);
+        }
+        oStream.flush();
     }
 
     @Override
-    public void replyChatList(int client, Chat[] chats) {
-        // TODO
+    public void replyChatList(int client, Chat[] chats) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x02);
+        for (Chat chat : chats) {
+            oStream.writeChat(chat);
+        }
+        oStream.flush();
     }
 
     @Override
-    public void replyChatMemberList(int client, User[] users) {
-        // TODO
+    public void replyChatMemberList(int client, User[] users) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x03);
+        for (User user : users) {
+            oStream.writeUser(user);
+        }
+        oStream.flush();
     }
 
     @Override
-    public void notifySignInSucceeded(int client, int userUuid) {
-        // TODO
+    public void notifySignInSucceeded(int client, int userUuid) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x04);
+        oStream.writeUuid(userUuid);
+        oStream.flush();
     }
 
     @Override
-    public void notifyChatJoinRequest(int client, int userUuid, int chatUuid) {
-        // TODO
+    public void notifyChatJoinRequest(int client, int userUuid, int chatUuid) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x05);
+        oStream.writeUuid(userUuid);
+        oStream.writeUuid(chatUuid);
+        oStream.flush();
     }
 
     @Override
-    public void notifyChatMembersChanged(int client, User user, Chat chat) {
-        // TODO
+    public void notifyChatMembersChanged(int client, User user, Chat chat) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x06);
+        oStream.writeUser(user);
+        oStream.writeChat(chat);
+        oStream.flush();
     }
 
     @Override
-    public void notifyMessageReceived(int client, int userUuid, int chatUuid, String text) {
-        // TODO
+    public void notifyMessageReceived(int client, int userUuid, int chatUuid, String text) throws IOException {
+        ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte((byte) 0x07);
+        oStream.writeUuid(userUuid);
+        oStream.writeUuid(chatUuid);
+        oStream.writeString(text);
+        oStream.flush();
     }
 
     private void createThread(int client) {
@@ -82,6 +113,39 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
                     final byte control = iStream.readByte();
                     switch (control) {
                         // TODO
+                        case 0x01:
+                            server.acquireUserList(client);
+                            break;
+                        case 0x02:
+                            server.acquireChatList(client);
+                            break;
+                        case 0x03:
+                            final int userUuid = iStream.readUuid();
+                            server.acquireChatMemberList(client, userUuid);
+                            break;
+                        case 0x04:
+                            final String username = iStream.readString();
+                            final String password = iStream.readString();
+                            server.requestSignIn(client, username, password);
+                            break;
+                        case 0x05:
+                            final String name = iStream.readString();
+                            server.requestCreateChat(client, name);
+                        case 0x06:
+                            final int userUuid_ = iStream.readUuid();
+                            final int chatUuid_ = iStream.readUuid();
+                            server.requestJoinChat(client, userUuid_, chatUuid_);
+                            break;
+                        case 0x07:
+                            final int userUuid__ = iStream.readUuid();
+                            final int chatUuid__ = iStream.readUuid();
+                            server.requestQuitChat(client, userUuid__, chatUuid__);
+                            break;
+                        case 0x08:
+                            final int chatUuid___ = iStream.readUuid();
+                            final String text = iStream.readString();
+                            server.requestSendMessage(client, chatUuid___, text);
+                            break;
                         default:
                             Log.socket("Ignoring unknown control byte %02x", control);
                     }

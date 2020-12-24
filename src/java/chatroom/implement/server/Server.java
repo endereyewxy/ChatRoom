@@ -47,17 +47,17 @@ public class Server implements IServer {
     }
 
     @Override
-    public void acquireUserList(int client) {
+    public void acquireUserList(int client) throws IOException {
         socket.replyUserList(client, userList.toArray(new User[0]));
     }
 
     @Override
-    public void acquireChatList(int client) {
+    public void acquireChatList(int client) throws IOException {
         socket.replyChatList(client, chatList.toArray(new Chat[0]));
     }
 
     @Override
-    public void acquireChatMemberList(int client, int chatUuid) {
+    public void acquireChatMemberList(int client, int chatUuid) throws IOException {
         final Chat chat = chatList.get(chatUuid - 1);
         socket.replyChatMemberList(client, chat.getMembers().stream()
                                                .map(uuid -> userList.get(uuid - 1))
@@ -66,7 +66,7 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestSignIn(int client, String username, String password) {
+    public void requestSignIn(int client, String username, String password) throws IOException {
         User matched = userData.get(username);
         if (matched == null && !authMode) {
             matched = new User(userList.size() + 1, (byte) 0, username, MD5.md5(password));
@@ -82,7 +82,7 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestCreateChat(int client, String name) {
+    public void requestCreateChat(int client, String name) throws IOException {
         final User user = c2u.get(client);
         final Chat chat = new Chat(chatList.size() + 1, (byte) 0, name, user.getUuid(), new HashSet<>());
         chat.getMembers().add(user.getUuid());
@@ -95,7 +95,7 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestJoinChat(int client, int userUuid, int chatUuid) {
+    public void requestJoinChat(int client, int userUuid, int chatUuid) throws IOException {
         final User user = c2u.get(client);
         final User join = userList.get(userUuid - 1);
         final Chat chat = chatList.get(chatUuid - 1);
@@ -116,7 +116,7 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestQuitChat(int client, int userUuid, int chatUuid) {
+    public void requestQuitChat(int client, int userUuid, int chatUuid) throws IOException {
         final User user = c2u.get(client);
         final User quit = userList.get(userUuid - 1);
         final Chat chat = chatList.get(chatUuid - 1);
@@ -144,7 +144,7 @@ public class Server implements IServer {
     }
 
     @Override
-    public void requestSendMessage(int client, int chatUuid, String text) {
+    public void requestSendMessage(int client, int chatUuid, String text) throws IOException {
         for (final int userUuid : chatList.get(chatUuid - 1).getMembers())
             socket.notifyMessageReceived(u2c.get(userUuid), c2u.get(client).getUuid(), chatUuid, text);
     }
