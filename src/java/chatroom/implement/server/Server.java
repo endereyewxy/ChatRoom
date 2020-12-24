@@ -78,6 +78,8 @@ public class Server implements IServer {
             u2c.put(matched.getUuid(), client);
             c2u.put(client, matched);
             socket.notifySignInSucceeded(client, matched.getUuid());
+            for (int cli : c2u.keySet())
+                acquireUserList(cli);
         }
     }
 
@@ -87,60 +89,36 @@ public class Server implements IServer {
         final Chat chat = new Chat(chatList.size() + 1, (byte) 0, name, user.getUuid(), new HashSet<>());
         chat.getMembers().add(user.getUuid());
         chatList.add(chat);
-        for (int cli : c2u.keySet()) {
-            socket.notifyChatMembersChanged(cli,
-                                            user.shadow(Flag.ofJoined(user, chat, true)),
-                                            chat.shadow(Flag.ofJoined(user, chat, true)));
-        }
+        for (int cli : c2u.keySet())
+            acquireChatList(cli);
     }
 
     @Override
     public void requestJoinChat(int client, int userUuid, int chatUuid) throws IOException {
         final User user = c2u.get(client);
-        final User join = userList.get(userUuid - 1);
         final Chat chat = chatList.get(chatUuid - 1);
 
         if (chat.getMembers().contains(userUuid))
             return;
 
-        if (user.getUuid() == chat.getCreator()) {
+        if (user.getUuid() == chat.getCreator())
             chat.getMembers().add(userUuid);
-            for (int cli : c2u.keySet()) {
-                socket.notifyChatMembersChanged(cli,
-                                                join.shadow(Flag.ofJoined(join, chat, user.getUuid() == userUuid)),
-                                                chat.shadow(Flag.ofJoined(join, chat, user.getUuid() == userUuid)));
-            }
-        } else if (user.getUuid() == userUuid) {
+        else if (user.getUuid() == userUuid)
             socket.notifyChatJoinRequest(u2c.get(chat.getCreator()), userUuid, chatUuid);
-        }
     }
 
     @Override
-    public void requestQuitChat(int client, int userUuid, int chatUuid) throws IOException {
+    public void requestQuitChat(int client, int userUuid, int chatUuid) {
         final User user = c2u.get(client);
-        final User quit = userList.get(userUuid - 1);
         final Chat chat = chatList.get(chatUuid - 1);
 
         if (!chat.getMembers().contains(userUuid))
             return;
 
-        if (user.getUuid() == chat.getCreator()) {
-            if (userUuid == user.getUuid())
-                return;
+        if (user.getUuid() == chat.getCreator() && userUuid != user.getUuid())
             chat.getMembers().remove(userUuid);
-            for (int cli : c2u.keySet()) {
-                socket.notifyChatMembersChanged(cli,
-                                                quit.shadow(Flag.ofQuited(quit, chat, false)),
-                                                chat.shadow(Flag.ofQuited(quit, chat, false)));
-            }
-        } else if (user.getUuid() == userUuid) {
+        else if (user.getUuid() == userUuid)
             chat.getMembers().remove(userUuid);
-            for (int cli : c2u.keySet()) {
-                socket.notifyChatMembersChanged(cli,
-                                                quit.shadow(Flag.ofQuited(quit, chat, true)),
-                                                chat.shadow(Flag.ofQuited(quit, chat, true)));
-            }
-        }
     }
 
     @Override

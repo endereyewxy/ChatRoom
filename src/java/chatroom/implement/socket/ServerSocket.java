@@ -81,15 +81,6 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     }
 
     @Override
-    public void notifyChatMembersChanged(int client, User user, Chat chat) throws IOException {
-        ByteOStream oStream = oStreams.get(client);
-        oStream.writeByte((byte) 0x06);
-        oStream.writeUser(user);
-        oStream.writeChat(chat);
-        oStream.flush();
-    }
-
-    @Override
     public void notifyMessageReceived(int client, int userUuid, int chatUuid, String text) throws IOException {
         ByteOStream oStream = oStreams.get(client);
         oStream.writeByte((byte) 0x07);
@@ -102,8 +93,8 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     private void createThread(int client) {
         final ByteIStream iStream = iStreams.get(client);
         new Thread(() -> {
-            while (true) {
-                try {
+            try {
+                while (true) {
                     final byte control = iStream.readByte();
                     switch (control) {
                         case 0x01:
@@ -124,6 +115,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
                         case 0x05:
                             final String name = iStream.readString();
                             server.requestCreateChat(client, name);
+                            break;
                         case 0x06:
                             final int userUuid_ = iStream.readUuid();
                             final int chatUuid_ = iStream.readUuid();
@@ -142,9 +134,9 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
                         default:
                             Log.socket("Ignoring unknown control byte %02x", control);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }).start();
     }

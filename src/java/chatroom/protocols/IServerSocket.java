@@ -18,7 +18,5 @@ public interface IServerSocket {
 
     void notifyChatJoinRequest(int client, int userUuid, int chatUuid) throws IOException;
 
-    void notifyChatMembersChanged(int client, User user, Chat chat) throws IOException;
-
     void notifyMessageReceived(int client, int userUuid, int chatUuid, String text) throws IOException;
 }

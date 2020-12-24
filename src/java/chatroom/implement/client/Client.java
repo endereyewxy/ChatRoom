@@ -38,11 +38,6 @@ public class Client implements IClient {
     }
 
     @Override
-    public void notifyChatMembersChanged(User user, Chat chat) {
-        UIClient.notifyChatMembersChanged(user, chat);
-    }
-
-    @Override
     public void notifyMessageReceived(int userUuid, int chatUuid, String text) {
         UIClient.notifyMessageReceived(userUuid, chatUuid, text);
     }

@@ -62,8 +62,10 @@ public class UIMain implements Initializable {
         userView.setCellFactory(userListView -> new ListCell<User>() {
             @Override
             protected void updateItem(User user, boolean empty) {
-                super.updateItem(user, empty);
-                setText(user == null ? "" : user.getUsername());
+                if (user == null || user.getUuid() != myUuid) {
+                    super.updateItem(user, empty);
+                    setText(user == null ? "" : user.getUsername());
+                }
             }
         });
         userView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -78,20 +80,27 @@ public class UIMain implements Initializable {
 
     @SuppressWarnings("unused")
     public void createChat(ActionEvent actionEvent) {
-        final ObservableList<User> list = userView.getSelectionModel().getSelectedItems();
-        list.removeIf(user -> user.getUuid() == myUuid);
+        taskCreateChatMembers = userView.getSelectionModel().getSelectedItems();
 
-        if (list.size() < 1)
+        int hasMyself = 0;
+        for (final User user : taskCreateChatMembers) {
+            if (user.getUuid() == myUuid) {
+                hasMyself = 1;
+                break;
+            }
+        }
+
+        if (taskCreateChatMembers.size() < 1 + hasMyself)
             return;
 
         final String name;
-        if (list.size() > 1) {
+        if (taskCreateChatMembers.size() > 1 + hasMyself) {
             final TextInputDialog inputDialog = new TextInputDialog();
             inputDialog.setHeaderText("新建群组名称");
             inputDialog.show();
             name = inputDialog.getContentText();
         } else {
-            name = myUser.getUsername() + " - " + list.get(0).getUsername();
+            name = myUser.getUsername() + " - " + taskCreateChatMembers.get(0).getUsername();
         }
 
         btnCreateChat.setText("正在创建……");

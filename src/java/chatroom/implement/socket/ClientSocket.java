@@ -44,10 +44,6 @@ public class ClientSocket extends Socket implements IClientSocket {
                             client.notifyChatJoinRequest(userUuid, chatUuid);
                             break;
                         case 0x06:
-                            final User user = iStream.readUser();
-                            final Chat chat = iStream.readChat();
-                            client.notifyChatMembersChanged(user, chat);
-                        case 0x07:
                             final int userUuid_ = iStream.readUuid();
                             final int chatUuid_ = iStream.readUuid();
                             client.notifyMessageReceived(userUuid_, chatUuid_, iStream.readString());

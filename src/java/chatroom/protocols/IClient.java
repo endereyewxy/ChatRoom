@@ -16,7 +16,5 @@ public interface IClient {
 
     void notifyChatJoinRequest(int userUuid, int chatUuid);
 
-    void notifyChatMembersChanged(User user, Chat chat);
-
     void notifyMessageReceived(int userUuid, int chatUuid, String text);
 }

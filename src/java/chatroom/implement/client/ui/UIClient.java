@@ -85,20 +85,6 @@ public class UIClient extends Application {
     public static void notifyChatJoinRequest(int userUuid, int chatUuid) {
     }
 
-    @SuppressWarnings("unused")
-    public static void notifyChatMembersChanged(User user, Chat chat) {
-        try {
-            if (user.getUuid() == mainController.myUuid && Flag.isCreator(user.getFlag())) {
-                for (final User member : mainController.taskCreateChatMembers)
-                    socket.requestJoinChat(member.getUuid(), chat.getUuid());
-                mainController.taskCreateChatMembers = null;
-            }
-            socket.acquireChatList();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void notifyMessageReceived(int userUuid, int chatUuid, String text) {
     }
 }

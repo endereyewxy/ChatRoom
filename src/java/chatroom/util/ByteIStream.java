@@ -3,6 +3,7 @@ package chatroom.util;
 import chatroom.protocols.entity.Chat;
 import chatroom.protocols.entity.User;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -62,11 +63,13 @@ public class ByteIStream {
         final byte[] buffer = new byte[length];
         while (true) {
             final int actual = inputStream.read(buffer);
-            Log.stream("<= %s", Arrays.toString(buffer));
             if (actual == length)
                 break;
+            if (actual == -1)
+                throw new EOFException();
             Log.stream("<! Ignoring because %d (actual) != %d (expected)", actual, length);
         }
+        Log.stream("<= %s", Arrays.toString(buffer));
         return buffer;
     }
 }
