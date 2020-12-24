@@ -109,10 +109,10 @@ public class UIMain implements Initializable {
 
         final TextInputDialog inputDialog = new TextInputDialog();
         inputDialog.setHeaderText("新建会话名称");
-        inputDialog.show();
+        inputDialog.showAndWait();
 
         try {
-            socket.requestCreateChat(inputDialog.getContentText(), list.toArray(new User[0]));
+            socket.requestCreateChat(inputDialog.getResult(), list.toArray(new User[0]));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,8 +122,10 @@ public class UIMain implements Initializable {
     public void sendMessage(ActionEvent actionEvent) {
         try {
             final Chat chat = chatView.getSelectionModel().getSelectedItem();
-            if (chat != null && !text.getText().isEmpty())
+            if (chat != null && !text.getText().isEmpty()) {
                 socket.requestSendMessage(chat.getUuid(), text.getText());
+                text.clear();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -148,8 +150,10 @@ public class UIMain implements Initializable {
     public void quitChat(ActionEvent actionEvent) {
         try {
             final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
-            if (chatObj != null)
+            if (chatObj != null) {
                 socket.requestQuitChat(myUuid, chatObj.getUuid());
+                chat.getEngine().loadContent("");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
