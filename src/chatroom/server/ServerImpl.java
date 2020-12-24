@@ -5,7 +5,6 @@ import chatroom.protocol.IServerApp;
 import chatroom.protocol.IServerSocket;
 import chatroom.util.MD5;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,14 +28,12 @@ public class ServerImpl implements IServerApp {
         }
     }
 
-    // @formatter:off
     private final HashMap<String, User> usersByUsername = new HashMap<>();
-    private final HashMap<Long, User> usersByClientId = new HashMap<>();
-    // @formatter:on
+    private final HashMap<Long, User>   usersByClientId = new HashMap<>();
 
     public static class Group {
-        public final String name;
-        public final long owner;
+        public final String        name;
+        public final long          owner;
         public final HashSet<Long> members = new HashSet<>();
 
         public Group(String name, long owner) {
@@ -63,7 +60,7 @@ public class ServerImpl implements IServerApp {
 
     public ServerImpl() {
         final String pathAuthentication = System.getProperty("server.path.auth");
-        try (final FileInputStream stream = new FileInputStream(new File(pathAuthentication))) {
+        try (final FileInputStream stream = new FileInputStream(pathAuthentication)) {
             final Scanner scanner = new Scanner(stream);
             while (scanner.hasNext()) {
                 final String username = scanner.next();
@@ -101,26 +98,26 @@ public class ServerImpl implements IServerApp {
     @Override
     public void onRequestUserList(long client) throws IOException {
         socket.replyUserList(client,
-                usersByClientId.keySet()
-                        .toArray(new Long[0]),
-                // Use keySet().stream() instead of values().stream() to prevent disordering.
-                usersByClientId.keySet().stream()
-                        .map(id -> usersByClientId.get(id).username)
-                        .toArray(String[]::new));
+                             usersByClientId.keySet()
+                                            .toArray(new Long[0]),
+                             // Use keySet().stream() instead of values().stream() to prevent disordering.
+                             usersByClientId.keySet().stream()
+                                            .map(id -> usersByClientId.get(id).username)
+                                            .toArray(String[]::new));
     }
 
     @Override
     public void onRequestGroupList(long client) throws IOException {
         socket.replyGroupList(client,
-                LongStream.rangeClosed(1, groups.size())
-                        .boxed()
-                        .toArray(Long[]::new),
-                groups.stream()
-                        .map(group -> group.name)
-                        .toArray(String[]::new),
-                groups.stream()
-                        .map(group -> Flags.of(group.owner == client, group.members.contains(client)))
-                        .toArray(Byte[]::new));
+                              LongStream.rangeClosed(1, groups.size())
+                                        .boxed()
+                                        .toArray(Long[]::new),
+                              groups.stream()
+                                    .map(group -> group.name)
+                                    .toArray(String[]::new),
+                              groups.stream()
+                                    .map(group -> Flags.of(group.owner == client, group.members.contains(client)))
+                                    .toArray(Byte[]::new));
     }
 
     @Override
@@ -193,14 +190,14 @@ public class ServerImpl implements IServerApp {
         if (0 < groupId && groupId <= groups.size()) {
             final Group group = groups.get((int) (groupId - 1));
             socket.replyRequestMemberList(client, groupId,
-                    group.members
-                            .toArray(new Long[0]),
-                    group.members.stream()
-                            .map(id -> usersByClientId.get(id).username)
-                            .toArray(String[]::new),
-                    group.members.stream()
-                            .map(id -> Flags.of(group.owner == id, true))
-                            .toArray(Byte[]::new));
+                                          group.members
+                                                  .toArray(new Long[0]),
+                                          group.members.stream()
+                                                       .map(id -> usersByClientId.get(id).username)
+                                                       .toArray(String[]::new),
+                                          group.members.stream()
+                                                       .map(id -> Flags.of(group.owner == id, true))
+                                                       .toArray(Byte[]::new));
         }
     }
 
