@@ -47,6 +47,13 @@ public class UIClient extends Application {
             primaryStage = stage;
             stage.setTitle("登录");
             stage.setScene(new Scene(initWindow));
+            stage.setOnCloseRequest(windowEvent -> {
+                try {
+                    socket.closeSocket();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

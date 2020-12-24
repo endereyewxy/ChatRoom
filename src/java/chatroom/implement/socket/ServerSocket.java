@@ -142,6 +142,11 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
             iStreams.remove(client);
             oStreams.remove(client);
             Log.socket("%d offline", client);
+            try {
+                server.clientClosed(client);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 }

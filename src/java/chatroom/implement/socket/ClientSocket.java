@@ -22,8 +22,8 @@ public class ClientSocket extends Socket implements IClientSocket {
         iStream = new ByteIStream(getInputStream());
         oStream = new ByteOStream(getOutputStream());
         new Thread(() -> {
-            while (true) {
-                try {
+            try {
+                while (true) {
                     final byte control = iStream.readByte();
                     switch (control) {
                         case 0x01:
@@ -51,9 +51,10 @@ public class ClientSocket extends Socket implements IClientSocket {
                         default:
                             Log.socket("Ignoring unknown control byte %02x", control);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(-1);
             }
         }).start();
     }
@@ -61,6 +62,11 @@ public class ClientSocket extends Socket implements IClientSocket {
     @Override
     public void bind(IClient client) {
         this.client = client;
+    }
+
+    @Override
+    public void closeSocket() throws IOException {
+        super.close();
     }
 
     @Override

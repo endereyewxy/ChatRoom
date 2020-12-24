@@ -29,9 +29,7 @@ public class Server implements IServer {
             while (scanner.hasNextLine()) {
                 final String username = scanner.next();
                 final String password = scanner.next();
-                userData.put(username,
-                             new User(userList.size() + 1, (byte) 0, username, MD5.md5(password)));
-                userList.add(new User(userList.size() + 1, (byte) 0, username, ""));
+                userData.put(username, new User(userList.size() + 1, (byte) 0, username, MD5.md5(password)));
             }
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
@@ -44,8 +42,19 @@ public class Server implements IServer {
     }
 
     @Override
+    public void clientClosed(int client) throws IOException {
+        userList.set(c2u.get(client).getUuid() - 1, null);
+        u2c.remove(c2u.get(client).getUuid());
+        c2u.remove(client);
+        for (final int cli : c2u.keySet())
+            acquireUserList(cli);
+    }
+
+    @Override
     public void acquireUserList(int client) throws IOException {
-        socket.replyUserList(client, userList.toArray(new User[0]));
+        socket.replyUserList(client, userList.stream()
+                                             .filter(Objects::nonNull)
+                                             .toArray(User[]::new));
     }
 
     @Override

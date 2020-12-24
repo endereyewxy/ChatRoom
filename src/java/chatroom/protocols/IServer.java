@@ -7,6 +7,8 @@ import java.io.IOException;
 public interface IServer {
     void bind(IServerSocket socket);
 
+    void clientClosed(int client) throws IOException;
+
     void acquireUserList(int client) throws IOException;
 
     void acquireChatList(int client) throws IOException;

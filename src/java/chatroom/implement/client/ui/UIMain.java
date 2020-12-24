@@ -15,6 +15,7 @@ import javafx.util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -143,8 +144,10 @@ public class UIMain implements Initializable {
         if (chatObj != null && history.containsKey(chatObj.getUuid())) {
             final StringBuilder builder = new StringBuilder();
             for (final Pair<String, String> line : history.get(chatObj.getUuid()))
-                builder.append("<p>")
+                builder.append("<p style=\"color: blue; text-decoration: underline;\">")
                        .append(line.getKey())
+                       .append("  ")
+                       .append(new SimpleDateFormat("HH:mm:ss").format(new Date()))
                        .append("</p><p>")
                        .append(line.getValue())
                        .append("<p>");
