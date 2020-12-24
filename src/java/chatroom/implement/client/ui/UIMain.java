@@ -56,9 +56,15 @@ public class UIMain implements Initializable {
     }
 
     public void setChatList(Chat[] chats) {
+        final Chat                 curr = chatView.getSelectionModel().getSelectedItem();
         final ObservableList<Chat> list = chatView.getItems();
         list.clear();
         list.addAll(chats);
+        for (final Chat c : list) {
+            if (curr != null && curr.getUuid() == c.getUuid())
+                chatView.getSelectionModel().select(c);
+        }
+        chatChanged(null);
 
         for (final Chat chat : chats)
             history.putIfAbsent(chat.getUuid(), new LinkedList<>());
@@ -141,23 +147,27 @@ public class UIMain implements Initializable {
     @SuppressWarnings("unused")
     public void chatChanged(MouseEvent mouseEvent) {
         final Chat chatObj = chatView.getSelectionModel().getSelectedItem();
-        if (chatObj != null && history.containsKey(chatObj.getUuid())) {
-            final StringBuilder builder = new StringBuilder();
-            for (final Pair<String, String> line : history.get(chatObj.getUuid()))
-                builder.append("<p style=\"color: blue; text-decoration: underline;\">")
-                       .append(line.getKey())
-                       .append("  ")
-                       .append(new SimpleDateFormat("HH:mm:ss").format(new Date()))
-                       .append("</p><p>")
-                       .append(line.getValue())
-                       .append("<p>");
-            chat.getEngine().loadContent(builder.toString());
+        if (chatObj != null) {
+            if (history.containsKey(chatObj.getUuid())) {
+                final StringBuilder builder = new StringBuilder();
+                for (final Pair<String, String> line : history.get(chatObj.getUuid()))
+                    builder.append("<p style=\"color: blue; text-decoration: underline;\">")
+                           .append(line.getKey())
+                           .append("  ")
+                           .append(new SimpleDateFormat("HH:mm:ss").format(new Date()))
+                           .append("</p><p>")
+                           .append(line.getValue())
+                           .append("<p>");
+                chat.getEngine().loadContent(builder.toString());
+            } else {
+                chat.getEngine().loadContent("");
+                final Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setHeaderText("");
+                alert.setContentText("你不在此会话中");
+                alert.showAndWait();
+            }
         } else {
             chat.getEngine().loadContent("");
-            final Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("");
-            alert.setContentText("你不在此会话中");
-            alert.showAndWait();
         }
     }
 
