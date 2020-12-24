@@ -2,6 +2,7 @@ package chatroom.implement.client.ui;
 
 import chatroom.protocols.IClientSocket;
 import chatroom.protocols.entity.Chat;
+import chatroom.protocols.entity.Flag;
 import chatroom.protocols.entity.User;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
@@ -66,18 +67,20 @@ public class UIMain implements Initializable {
         }
         chatChanged(null);
 
-        for (final Chat chat : chats)
-            history.putIfAbsent(chat.getUuid(), new LinkedList<>());
-
-        final Set<Integer> visited = Arrays.stream(chats).map(Chat::getUuid).collect(Collectors.toSet());
-        for (final int key : history.keySet()) {
-            if (!visited.contains(key))
-                history.remove(key);
-        }
-
         chatMap.clear();
         for (final Chat chat : chats)
             chatMap.put(chat.getUuid(), chat);
+
+        for (final Chat chat : chats) {
+            if (Flag.isMember(chat.getFlag()))
+                history.putIfAbsent(chat.getUuid(), new LinkedList<>());
+        }
+
+        final Set<Integer> visited = Arrays.stream(chats).map(Chat::getUuid).collect(Collectors.toSet());
+        for (final int key : history.keySet()) {
+            if (!visited.contains(key) || !Flag.isMember(chatMap.get(key).getFlag()))
+                history.remove(key);
+        }
     }
 
     public void addHistory(int userUuid, int chatUuid, String text) {

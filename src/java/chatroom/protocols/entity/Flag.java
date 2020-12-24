@@ -30,6 +30,10 @@ public abstract class Flag {
         return of(user, chat, null, quited);
     }
 
+    public static boolean isMember(byte flag) {
+        return (flag & 0x01) != 0;
+    }
+
     public static boolean isCreator(byte flag) {
         return (flag & 0x02) != 0;
     }

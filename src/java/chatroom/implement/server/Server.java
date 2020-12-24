@@ -59,8 +59,10 @@ public class Server implements IServer {
 
     @Override
     public void acquireChatList(int client) throws IOException {
+        final User user = c2u.get(client);
         socket.replyChatList(client, chatList.stream()
                                              .filter(Objects::nonNull)
+                                             .map(chat -> chat.shadow(Flag.of(user, chat)))
                                              .toArray(Chat[]::new));
     }
 
