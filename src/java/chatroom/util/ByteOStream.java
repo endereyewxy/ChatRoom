@@ -47,6 +47,17 @@ public class ByteOStream {
         writeString(chat.getName());
     }
 
+    @FunctionalInterface
+    public interface Operation<T> {
+        void write(T t) throws IOException;
+    }
+
+    public <T> void writeArray(T[] array, Operation<T> operation) throws IOException {
+        writeUuid(array.length);
+        for (final T t : array)
+            operation.write(t);
+    }
+
     public void flush() throws IOException {
         outputStream.flush();
     }

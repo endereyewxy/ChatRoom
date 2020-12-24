@@ -43,9 +43,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     public void replyUserList(int client, User[] users) throws IOException {
         ByteOStream oStream = oStreams.get(client);
         oStream.writeByte((byte) 0x01);
-        for (User user : users) {
-            oStream.writeUser(user);
-        }
+        oStream.writeArray(users, oStream::writeUser);
         oStream.flush();
     }
 
@@ -53,9 +51,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     public void replyChatList(int client, Chat[] chats) throws IOException {
         ByteOStream oStream = oStreams.get(client);
         oStream.writeByte((byte) 0x02);
-        for (Chat chat : chats) {
-            oStream.writeChat(chat);
-        }
+        oStream.writeArray(chats, oStream::writeChat);
         oStream.flush();
     }
 
@@ -63,9 +59,7 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
     public void replyChatMemberList(int client, User[] users) throws IOException {
         ByteOStream oStream = oStreams.get(client);
         oStream.writeByte((byte) 0x03);
-        for (User user : users) {
-            oStream.writeUser(user);
-        }
+        oStream.writeArray(users, oStream::writeUser);
         oStream.flush();
     }
 
@@ -112,7 +106,6 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
                 try {
                     final byte control = iStream.readByte();
                     switch (control) {
-                        // TODO
                         case 0x01:
                             server.acquireUserList(client);
                             break;

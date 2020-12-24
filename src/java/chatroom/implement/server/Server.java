@@ -36,7 +36,7 @@ public class Server implements IServer {
                              new User(userList.size() + 1, (byte) 0, username, MD5.md5(password)));
                 userList.add(new User(userList.size() + 1, (byte) 0, username, ""));
             }
-        } catch (IOException e) {
+        } catch (NullPointerException | IOException e) {
             e.printStackTrace();
         }
     }

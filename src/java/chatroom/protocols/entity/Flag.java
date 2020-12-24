@@ -29,4 +29,8 @@ public abstract class Flag {
     public static byte ofQuited(User user, Chat chat, boolean quited) {
         return of(user, chat, null, quited);
     }
+
+    public static boolean isCreator(byte flag) {
+        return (flag & 0x02) != 0;
+    }
 }

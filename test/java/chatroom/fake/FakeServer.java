@@ -31,25 +31,23 @@ public class FakeServer {
 
         final Scanner scanner = new Scanner(System.in);
         while (true) {
-            final String[] cmd = scanner.nextLine().split("\\s+");
-            switch (cmd[0]) {
-                case "bytes":
-                    for (int i = 1; i < cmd.length; i++)
-                        oStream.writeByte(Byte.parseByte(cmd[i], 16));
-                    oStream.flush();
-                    break;
-                case "integers":
-                    for (int i = 1; i < cmd.length; i++)
-                        oStream.writeUuid(Integer.parseInt(cmd[i]));
-                    oStream.flush();
-                    break;
-                case "fixed":
-                    oStream.writeFixedString(cmd[1]);
-                    oStream.flush();
-                    break;
-                case "string":
-                    oStream.writeMessageString(cmd[1]);
-                    oStream.flush();
+            String state = "b";
+            for (final String cmd : scanner.nextLine().split("\\s+")) {
+                if (cmd.startsWith("!")) {
+                    state = cmd.substring(1);
+                } else {
+                    switch (state) {
+                        case "b":
+                            oStream.writeByte(Byte.decode(cmd));
+                            break;
+                        case "i":
+                            oStream.writeUuid(Integer.decode(cmd));
+                            break;
+                        case "s":
+                            oStream.writeString(cmd);
+                            break;
+                    }
+                }
             }
         }
     }

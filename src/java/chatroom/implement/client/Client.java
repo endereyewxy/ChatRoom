@@ -7,39 +7,43 @@ import chatroom.protocols.entity.Chat;
 import chatroom.protocols.entity.User;
 
 public class Client implements IClient {
-    private IClientSocket socket;
-
     @Override
     public void bind(IClientSocket socket) {
-        this.socket = socket;
-        UIClient.launch(this, socket);
+        UIClient.launch(socket);
     }
 
     @Override
     public void replyUserList(User[] users) {
+        UIClient.replyUserList(users);
     }
 
     @Override
     public void replyChatList(Chat[] chats) {
+        UIClient.replyChatList(chats);
     }
 
     @Override
     public void replyChatMemberList(User[] users) {
+        UIClient.replyChatMemberList(users);
     }
 
     @Override
     public void notifySignInSucceeded(int userUuid) {
+        UIClient.notifySignInSucceeded(userUuid);
     }
 
     @Override
     public void notifyChatJoinRequest(int userUuid, int chatUuid) {
+        UIClient.notifyChatJoinRequest(userUuid, chatUuid);
     }
 
     @Override
     public void notifyChatMembersChanged(User user, Chat chat) {
+        UIClient.notifyChatMembersChanged(user, chat);
     }
 
     @Override
     public void notifyMessageReceived(int userUuid, int chatUuid, String text) {
+        UIClient.notifyMessageReceived(userUuid, chatUuid, text);
     }
 }
