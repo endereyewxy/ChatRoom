@@ -26,10 +26,11 @@ public class Server implements IServer {
     public Server() {
         try (final FileInputStream inputStream = new FileInputStream(System.getProperty("server.userData"))) {
             final Scanner scanner = new Scanner(inputStream);
-            while (scanner.hasNextLine()) {
+            while (scanner.hasNext()) {
                 final String username = scanner.next();
                 final String password = scanner.next();
                 userData.put(username, new User(userList.size() + 1, (byte) 0, username, MD5.md5(password)));
+                userList.add(null);
             }
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
@@ -80,12 +81,12 @@ public class Server implements IServer {
     public void requestSignIn(int client, String username, String password) throws IOException {
         User matched = userData.get(username);
         if (matched == null && !authMode) {
-            matched = new User(userList.size() + 1, (byte) 0, username, MD5.md5(password));
+            matched = new User(userList.size() + 1, (byte) 0, username, password);
             userData.put(matched.getUsername(),
                          matched);
             userList.add(matched);
         }
-        if (matched != null) {
+        if (matched != null && matched.getPassword().equals(password)) {
             u2c.put(matched.getUuid(), client);
             c2u.put(client, matched);
             userList.set(matched.getUuid() - 1, matched);

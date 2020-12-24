@@ -91,7 +91,7 @@ public class UIClient extends Application {
         } else {
             Platform.runLater(() -> {
                 final Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setHeaderText("错误");
+                alert.setTitle("错误");
                 alert.setContentText("登录失败");
                 alert.showAndWait();
             });
