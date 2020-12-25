@@ -204,7 +204,9 @@ public class Server implements IServer {
         final User from = userC2O.get(client);
 
         if (user != null) {
-            socket.notifyMessage(from.getUuid(), userO2C.get(user), from.getUuid(), msg);
+            socket.notifyMessage(userO2C.get(user), from.getUuid(), from.getUuid(), msg);
+            if (user != from)
+                socket.notifyMessage(userO2C.get(from), from.getUuid(), from.getUuid(), msg);
             Log.server("Message U2U %d -> %d: \"%s\"", from.getUuid(), uuid, msg);
         }
 

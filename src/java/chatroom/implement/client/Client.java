@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.util.Pair;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -51,9 +52,9 @@ public class Client implements IClient {
     private final HashMap<Integer, User> users = new HashMap<>();
     private final HashMap<Integer, Chat> chats = new HashMap<>();
 
-    private final HashMap<Integer, Chat>                              myChats = new HashMap<>();
-    private final HashMap<Integer, LinkedList<Pair<Integer, String>>> history = new HashMap<>();
-    private final HashMap<Integer, LinkedList<Pair<Integer, String>>> p2pChat = new HashMap<>();
+    private final HashMap<Integer, Chat>                             myChats = new HashMap<>();
+    private final HashMap<Integer, LinkedList<Pair<String, String>>> history = new HashMap<>();
+    private final HashMap<Integer, LinkedList<Pair<String, String>>> p2pChat = new HashMap<>();
 
     public Client() {
         instance = this; // there should be only one client
@@ -63,19 +64,15 @@ public class Client implements IClient {
         return users;
     }
 
-    public HashMap<Integer, Chat> getChats() {
-        return chats;
-    }
-
     public HashMap<Integer, Chat> getMyChats() {
         return myChats;
     }
 
-    public HashMap<Integer, LinkedList<Pair<Integer, String>>> getHistory() {
+    public HashMap<Integer, LinkedList<Pair<String, String>>> getHistory() {
         return history;
     }
 
-    public HashMap<Integer, LinkedList<Pair<Integer, String>>> getP2pChat() {
+    public HashMap<Integer, LinkedList<Pair<String, String>>> getP2pChat() {
         return p2pChat;
     }
 
@@ -116,7 +113,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public void updateUserList(User[] userArray) throws IOException {
+    public void updateUserList(User[] userArray) {
         users.clear();
         users.putAll(Arrays.stream(userArray).collect(Collectors.toMap(User::getUuid, Function.identity())));
 
@@ -131,7 +128,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public void updateChatList(Chat[] chatArray) throws IOException {
+    public void updateChatList(Chat[] chatArray) {
         chats.clear();
         chats.putAll(Arrays.stream(chatArray).collect(Collectors.toMap(Chat::getUuid, Function.identity())));
 
@@ -139,12 +136,12 @@ public class Client implements IClient {
     }
 
     @Override
-    public void updateChatInfo(User[] users) throws IOException {
+    public void updateChatInfo(User[] users) {
         Platform.runLater(() -> uiCtrl.getMainController().updateUserList(users));
     }
 
     @Override
-    public void notifyChatJoined(int chat, int user, byte reason) throws IOException {
+    public void notifyChatJoined(int chat, int user, byte reason) {
         if (user == myself) {
             myChats.put(chat, chats.get(chat));
             history.put(chat, new LinkedList<>());
@@ -152,7 +149,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public void notifyChatQuited(int chat, int user, byte reason) throws IOException {
+    public void notifyChatQuited(int chat, int user, byte reason) {
         if (user == myself) {
             myChats.remove(chat);
             history.remove(chat);
@@ -160,7 +157,7 @@ public class Client implements IClient {
     }
 
     @Override
-    public void notifyChatJoinRequest(int chat, int user) throws IOException {
+    public void notifyChatJoinRequest(int chat, int user) {
         Platform.runLater(() -> {
             if (UI.confirm(String.format("用户%s希望加入您创建的会话%s中，是否同意？",
                                          users.get(user).getName(),
@@ -170,11 +167,12 @@ public class Client implements IClient {
     }
 
     @Override
-    public void notifyMessage(int chat, int from, String msg) throws IOException {
-        if (chat == from)
-            p2pChat.get(chat).add(new Pair<>(from, msg));
-        else
-            history.get(chat).add(new Pair<>(from, msg));
+    public void notifyMessage(int chat, int from, String msg) {
+        final Pair<String, String> h = new Pair<>(
+                users.get(from).getName() + new SimpleDateFormat("HH:mm:ss").format(new Date()),
+                msg);
+        (users.containsKey(chat) ? p2pChat : history).get(chat).add(h);
+
         Platform.runLater(() -> uiCtrl.getMainController().updateHistory());
     }
 }

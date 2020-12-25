@@ -82,14 +82,12 @@ public class Main implements Initializable {
         if (selChat == null && usrChat == null)
             return;
         final StringBuilder builder = new StringBuilder();
-        for (final Pair<Integer, String> h : selChat != null
-                                             ? Client.getInstance().getHistory().get(selChat)
-                                             : Client.getInstance().getP2pChat().get(usrChat))
-            builder.append("<p style=\"color: ")
-                   .append(h.getKey() == Client.getInstance().getMyself() ? "#006400" : "blue")
-                   .append("; text-decoration: underline\">")
-                   .append(Client.getInstance().getUsers().get(h.getKey()).getName())
-                   .append("</p><p>")
+        for (final Pair<String, String> h : selChat != null
+                                            ? Client.getInstance().getHistory().get(selChat)
+                                            : Client.getInstance().getP2pChat().get(usrChat))
+            builder.append("<p style=\"color: blue; text-decoration: underline;\">")
+                   .append(h.getKey())
+                   .append("</p><p>&nbsp;&nbsp;&nbsp;&nbsp;")
                    .append(h.getValue())
                    .append("</p>");
         webChat.getEngine().loadContent(builder.toString());
@@ -129,10 +127,10 @@ public class Main implements Initializable {
         final ArrayList<User> list = new ArrayList<>(lstUser.getSelectionModel().getSelectedItems());
         list.removeIf(user -> user.getUuid() == Client.getInstance().getMyself());
 
-//        if (list.size() == 1) {
-//            UI.error("请选择至少一个初始会话成员");
-//            return;
-//        }
+        if (list.isEmpty()) {
+            UI.error("请选择至少一个初始会话成员");
+            return;
+        }
 
         Client.getInstance().doWithSocket(socket -> socket.requestInitChat(
                 UI.input("请输入会话名称："),
