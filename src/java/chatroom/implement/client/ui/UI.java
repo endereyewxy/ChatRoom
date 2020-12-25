@@ -90,4 +90,11 @@ public class UI extends Application {
         alert.setContentText(msg);
         alert.showAndWait();
     }
+
+    public static void inform(String msg) {
+        final Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("");
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
 }

@@ -146,6 +146,11 @@ public class Client implements IClient {
             myChats.put(chat, chats.get(chat));
             history.put(chat, new LinkedList<>());
         }
+        Platform.runLater(() -> {
+            uiCtrl.getMainController().joinedChat(chats.get(chat), users.get(user));
+            if (user == myself && reason == Protocol.REASON_NORMAL)
+                UI.inform(String.format("您已加入会话%s", chats.get(chat).getName()));
+        });
     }
 
     @Override
@@ -154,6 +159,18 @@ public class Client implements IClient {
             myChats.remove(chat);
             history.remove(chat);
         }
+        Platform.runLater(() -> {
+            uiCtrl.getMainController().quitedChat(chats.get(chat), users.get(user));
+            if (user == myself) {
+                switch (reason) {
+                    case Protocol.REASON_INIT_QUIT:
+                        UI.inform(String.format("会话%s的创建者已把您移出会话", chats.get(chat).getName()));
+                        break;
+                    case Protocol.REASON_SELF_QUIT:
+                        UI.inform(String.format("您已退出会话%s", chats.get(chat).getName()));
+                }
+            }
+        });
     }
 
     @Override
@@ -169,7 +186,7 @@ public class Client implements IClient {
     @Override
     public void notifyMessage(int chat, int from, String msg) {
         final Pair<String, String> h = new Pair<>(
-                users.get(from).getName() + new SimpleDateFormat("HH:mm:ss").format(new Date()),
+                users.get(from).getName() + "&nbsp;&nbsp;" + new SimpleDateFormat("HH:mm:ss").format(new Date()),
                 msg);
         (users.containsKey(chat) ? p2pChat : history).get(chat).add(h);
 

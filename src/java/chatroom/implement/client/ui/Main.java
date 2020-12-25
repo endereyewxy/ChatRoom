@@ -110,7 +110,7 @@ public class Main implements Initializable {
                 if (chat != null) {
                     lblChat.setText("会话：" + Client.getInstance().getMyChats().get(sel).getName());
                     updateHistory();
-                } else if (UI.confirm("你不再此会话中，是否向该会话的创建者请求加入？")) {
+                } else if (UI.confirm("您不再此会话中，是否向该会话的创建者请求加入？")) {
                     Client.getInstance().doWithSocket(socket -> socket.requestJoinChat(sel, Client.getInstance().getMyself()));
                 }
             } else if (usr != null) {
@@ -121,6 +121,19 @@ public class Main implements Initializable {
                 webChat.getEngine().loadContent("");
             }
         });
+    }
+
+    public void joinedChat(Chat chat, User user) {
+        if (Objects.equals(chat.getUuid(), selChat))
+            lstUser.getItems().add(user);
+    }
+
+    public void quitedChat(Chat chat, User user) {
+        if (Objects.equals(chat.getUuid(), selChat)) {
+            lstUser.getItems().remove(user);
+            if (user.getUuid() == Client.getInstance().getMyself())
+                actionExitChat();
+        }
     }
 
     public void actionInitChat() {
@@ -143,6 +156,10 @@ public class Main implements Initializable {
     }
 
     public void actionExitChat() {
+        mnuChat.getItems()
+               .stream()
+               .filter(item -> item instanceof RadioMenuItem)
+               .forEach(item -> ((RadioMenuItem) item).setSelected(false));
         switchToChat(usrChat, null);
     }
 

@@ -251,10 +251,10 @@ public class Server implements IServer {
             return;
         }
 
-        chats.remove(chat);
-        users.remove(user);
         for (final User u : users)
             socket.notifyChatQuited(userO2C.get(u), chat.getUuid(), user.getUuid(), reason);
+        chats.remove(chat);
+        users.remove(user);
 
         Log.server("User %d quited chat %d", user.getUuid(), chat.getUuid());
     }
