@@ -1,25 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
-<BorderPane prefHeight="624.0" prefWidth="796.0" xmlns="http://javafx.com/javafx/8.0.171"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatroom.implement.client.ui.Main">
+
+<BorderPane prefHeight="624.0" prefWidth="796.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatroom.implement.client.ui.Main">
     <top>
         <MenuBar BorderPane.alignment="CENTER">
             <menus>
                 <Menu mnemonicParsing="false" text="动作">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#actionInitChat" text="新建会话"/>
-                        <MenuItem mnemonicParsing="false" onAction="#actionQuitChat" text="退出会话"/>
+                        <MenuItem mnemonicParsing="false" onAction="#actionInitChat" text="新建会话" />
+                        <MenuItem mnemonicParsing="false" onAction="#actionQuitChat" text="退出会话" />
                     </items>
                 </Menu>
                 <Menu fx:id="mnuChat" mnemonicParsing="false" text="会话">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#actionExitChat" text="回到大厅"/>
-                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem mnemonicParsing="false" onAction="#actionExitChat" text="回到大厅" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
                     </items>
                 </Menu>
             </menus>
@@ -28,44 +36,33 @@
     <center>
         <AnchorPane prefHeight="626.0" prefWidth="796.0" BorderPane.alignment="CENTER">
             <children>
-                <SplitPane dividerPositions="0.29797979797979796" layoutX="238.0" layoutY="144.0" prefHeight="160.0"
-                           prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                           AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <SplitPane dividerPositions="0.29797979797979796" layoutX="238.0" layoutY="144.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <items>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                             <children>
-                                <ListView fx:id="lstUser" layoutX="17.0" layoutY="136.0" prefHeight="200.0"
-                                          prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                                <ListView fx:id="lstUser" layoutX="17.0" layoutY="136.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                             </children>
                         </AnchorPane>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                             <children>
-                                <BorderPane layoutX="177.0" layoutY="159.0" prefHeight="200.0" prefWidth="200.0"
-                                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                <BorderPane layoutX="177.0" layoutY="159.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <bottom>
-                                        <BorderPane maxHeight="-Infinity" prefHeight="0.0" prefWidth="553.0"
-                                                    BorderPane.alignment="CENTER">
+                                        <BorderPane maxHeight="-Infinity" prefHeight="0.0" prefWidth="553.0" BorderPane.alignment="CENTER">
                                             <right>
-                                                <Button mnemonicParsing="false" text="发送"
-                                                        BorderPane.alignment="CENTER"/>
+                                                <Button mnemonicParsing="false" onAction="#actionSendMessage" text="发送" BorderPane.alignment="CENTER" />
                                             </right>
                                             <center>
-                                                <TextField fx:id="txtChat" BorderPane.alignment="CENTER"/>
+                                                <TextField fx:id="txtChat" onAction="#actionSendMessage" BorderPane.alignment="CENTER" />
                                             </center>
                                         </BorderPane>
                                     </bottom>
                                     <center>
-                                        <WebView fx:id="webChat" prefHeight="200.0" prefWidth="200.0"
-                                                 BorderPane.alignment="CENTER"/>
+                                        <WebView fx:id="webChat" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                                     </center>
                                     <top>
-                                        <Label fx:id="lblChat" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
-                                               style="-fx-background-color: white; -fx-border-style: hidden hidden solid hidden;"
-                                               textOverrun="CLIP" BorderPane.alignment="CENTER">
+                                        <Label fx:id="lblChat" maxWidth="1.7976931348623157E308" minHeight="-Infinity" style="-fx-background-color: white; -fx-border-style: hidden hidden solid hidden;" textOverrun="CLIP" BorderPane.alignment="CENTER">
                                             <font>
-                                                <Font name="Microsoft YaHei UI" size="15.0"/>
+                                                <Font name="Microsoft YaHei UI" size="15.0" />
                                             </font>
                                         </Label>
                                     </top>

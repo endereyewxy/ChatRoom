@@ -136,6 +136,9 @@ public class Server implements IServer {
         chatI2O    .put(chat.getUuid(), chat);
         relationC2U.put(chat          , new HashSet<>());
         // @formatter:on
+
+        for (final int clit : userO2C.values())
+            doUpdateChatList(clit);
         doJoinChat(chat, user, Protocol.REASON_CREATE);
         for (final int member : members)
             doJoinChat(chat, userI2O.get(member), Protocol.REASON_NORMAL);
@@ -168,20 +171,30 @@ public class Server implements IServer {
     public void requestQuitChat(int client, int chat, int user) throws IOException {
         final User userObj = userC2O.get(client);
         final Chat chatObj = chatI2O.get(chat);
-        final User joinObj = userI2O.get(user);
+        final User quitObj = userI2O.get(user);
 
-        if (userObj == null || chatObj == null || joinObj == null) {
+        if (userObj == null || chatObj == null || quitObj == null) {
             Log.server("Invalid request");
             return;
         }
 
-        if (userObj == joinObj) {
-            doQuitChat(chatObj, joinObj, Protocol.REASON_SELF_QUIT);
+        if (userObj.getUuid() == chatObj.getInit()) {
+            doQuitChat(chatObj, quitObj, Protocol.REASON_INIT_QUIT);
+
+            if (quitObj == userObj) {
+                chatI2O.remove(chat);
+                for (final User u : relationC2U.get(chatObj))
+                    relationU2C.get(u).remove(chatObj);
+                relationC2U.remove(chatObj);
+
+                for (final int clit : userO2C.values())
+                    doUpdateChatList(clit);
+            }
             return;
         }
 
-        if (userObj.getUuid() == chatObj.getInit())
-            doQuitChat(chatObj, joinObj, Protocol.REASON_INIT_QUIT);
+        if (userObj == quitObj)
+            doQuitChat(chatObj, quitObj, Protocol.REASON_SELF_QUIT);
     }
 
     @Override
@@ -197,7 +210,7 @@ public class Server implements IServer {
 
         if (chat != null) {
             for (final User member : relationC2U.get(chat))
-                socket.notifyMessage(chat.getUuid(), userO2C.get(member), from.getUuid(), msg);
+                socket.notifyMessage(userO2C.get(member), chat.getUuid(), from.getUuid(), msg);
             Log.server("Message U2C %d -> %d: \"%s\"", from.getUuid(), uuid, msg);
         }
     }

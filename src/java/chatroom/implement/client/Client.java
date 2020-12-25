@@ -11,10 +11,7 @@ import javafx.application.Platform;
 import javafx.util.Pair;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,7 +53,7 @@ public class Client implements IClient {
 
     private final HashMap<Integer, Chat>                              myChats = new HashMap<>();
     private final HashMap<Integer, LinkedList<Pair<Integer, String>>> history = new HashMap<>();
-    private final HashMap<Integer, LinkedList<String>>                p2pChat = new HashMap<>();
+    private final HashMap<Integer, LinkedList<Pair<Integer, String>>> p2pChat = new HashMap<>();
 
     public Client() {
         instance = this; // there should be only one client
@@ -78,7 +75,7 @@ public class Client implements IClient {
         return history;
     }
 
-    public HashMap<Integer, LinkedList<String>> getP2pChat() {
+    public HashMap<Integer, LinkedList<Pair<Integer, String>>> getP2pChat() {
         return p2pChat;
     }
 
@@ -125,7 +122,7 @@ public class Client implements IClient {
 
         for (final User user : userArray)
             p2pChat.putIfAbsent(user.getUuid(), new LinkedList<>());
-        for (final int uuid : p2pChat.keySet()) {
+        for (final int uuid : new HashSet<>(p2pChat.keySet())) {
             if (!users.containsKey(uuid))
                 p2pChat.remove(uuid);
         }
@@ -143,7 +140,7 @@ public class Client implements IClient {
 
     @Override
     public void updateChatInfo(User[] users) throws IOException {
-//        Platform.runLater(() -> uiCtrl.updateChatInfo(users));
+        Platform.runLater(() -> uiCtrl.getMainController().updateUserList(users));
     }
 
     @Override
@@ -152,7 +149,6 @@ public class Client implements IClient {
             myChats.put(chat, chats.get(chat));
             history.put(chat, new LinkedList<>());
         }
-        Platform.runLater(() -> uiCtrl.getMainController().insertChatIntoMenu(chats.get(chat)));
     }
 
     @Override
@@ -161,21 +157,24 @@ public class Client implements IClient {
             myChats.remove(chat);
             history.remove(chat);
         }
-        Platform.runLater(() -> uiCtrl.getMainController().removeChatFromMenu(chats.get(chat)));
     }
 
     @Override
     public void notifyChatJoinRequest(int chat, int user) throws IOException {
-//        Platform.runLater(() -> uiCtrl.notifyChatJoinRequest(chat, user));
+        Platform.runLater(() -> {
+            if (UI.confirm(String.format("用户%s希望加入您创建的会话%s中，是否同意？",
+                                         users.get(user).getName(),
+                                         chats.get(chat).getName())))
+                doWithSocket(socket -> socket.requestJoinChat(chat, user));
+        });
     }
 
     @Override
     public void notifyMessage(int chat, int from, String msg) throws IOException {
         if (chat == from)
-            p2pChat.get(chat).add(msg);
+            p2pChat.get(chat).add(new Pair<>(from, msg));
         else
             history.get(chat).add(new Pair<>(from, msg));
-
-//        Platform.runLater(() -> uiCtrl.notifyMessage(chat, from, msg));
+        Platform.runLater(() -> uiCtrl.getMainController().updateHistory());
     }
 }

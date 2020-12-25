@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 
@@ -69,13 +70,23 @@ public class UI extends Application {
 
     public static String input(String msg) {
         final TextInputDialog input = new TextInputDialog();
+        input.setHeaderText("");
         input.setContentText(msg);
         input.showAndWait();
         return input.getResult();
     }
 
+    public static boolean confirm(String msg) {
+        final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("");
+        alert.setContentText(msg);
+        alert.showAndWait();
+        return alert.getResult() == ButtonType.OK;
+    }
+
     public static void error(String msg) {
         final Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText("");
         alert.setContentText(msg);
         alert.showAndWait();
     }

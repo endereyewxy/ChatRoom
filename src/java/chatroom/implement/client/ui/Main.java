@@ -9,11 +9,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
+import javafx.util.Pair;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class Main implements Initializable {
     @FXML
@@ -41,7 +44,7 @@ public class Main implements Initializable {
         lstUser.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         lstUser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             final User selected = lstUser.getSelectionModel().getSelectedItem();
-            actionSwitchChat(selected == null ? null : selected.getUuid(), selChat);
+            switchToChat(selected == null ? null : selected.getUuid(), selChat);
         });
 
         webChat.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
@@ -51,31 +54,48 @@ public class Main implements Initializable {
     }
 
     public void updateUserList(Integer sel, User[] userArray) {
-        if (Objects.equals(sel, selChat)) {
-            lstUser.getItems().clear();
-            lstUser.getItems().addAll(userArray);
-        }
+        if (Objects.equals(sel, selChat))
+            updateUserList(userArray);
+    }
+
+    public void updateUserList(User[] userArray) {
+        lstUser.getItems().clear();
+        lstUser.getItems().addAll(userArray);
     }
 
     public void updateChatList(Chat[] chats) {
         mnuChat.getItems().removeIf(item -> item instanceof RadioMenuItem);
-        for (final Chat chat : chats)
-            insertChatIntoMenu(chat);
+        mnuChat.getItems().addAll(Arrays.stream(chats)
+                                        .map(chat -> {
+                                            final RadioMenuItem item = new RadioMenuItem(chat.getName());
+                                            item.setOnAction(event -> switchToChat(usrChat, chat.getUuid()));
+                                            item.setId(String.valueOf(chat.getUuid()));
+                                            item.setSelected(Objects.equals(chat.getUuid(), selChat));
+                                            return (MenuItem) item;
+                                        })
+                                        .collect(Collectors.toList()));
+        if (Arrays.stream(chats).noneMatch(chat -> Objects.equals(chat.getUuid(), selChat)))
+            actionExitChat();
     }
 
-    public void insertChatIntoMenu(Chat chat) {
-        final MenuItem item = new RadioMenuItem(chat.getName());
-        item.setOnAction(event -> actionSwitchChat(usrChat, chat.getUuid()));
-        item.setId(String.valueOf(chat.getUuid()));
-        mnuChat.getItems().add(item);
+    public void updateHistory() {
+        if (selChat == null && usrChat == null)
+            return;
+        final StringBuilder builder = new StringBuilder();
+        for (final Pair<Integer, String> h : selChat != null
+                                             ? Client.getInstance().getHistory().get(selChat)
+                                             : Client.getInstance().getP2pChat().get(usrChat))
+            builder.append("<p style=\"color: ")
+                   .append(h.getKey() == Client.getInstance().getMyself() ? "#006400" : "blue")
+                   .append("; text-decoration: underline\">")
+                   .append(Client.getInstance().getUsers().get(h.getKey()).getName())
+                   .append("</p><p>")
+                   .append(h.getValue())
+                   .append("</p>");
+        webChat.getEngine().loadContent(builder.toString());
     }
 
-    public void removeChatFromMenu(Chat chat) {
-        mnuChat.getItems()
-               .removeIf(item -> item instanceof RadioMenuItem && item.getId().equals(String.valueOf(chat.getUuid())));
-    }
-
-    public void actionSwitchChat(Integer usr, Integer sel) {
+    public void switchToChat(Integer usr, Integer sel) {
         if (Objects.equals(usr, usrChat) && Objects.equals(sel, selChat))
             return;
         Platform.runLater(() -> {
@@ -85,13 +105,23 @@ public class Main implements Initializable {
                 else
                     Client.getInstance().doWithSocket(socket -> socket.requestChatInfo(sel));
             }
-            if (sel != null) {
-                lblChat.setText(Client.getInstance().getMyChats().get(sel).getName());
-            } else {
-                lblChat.setText("");
-            }
             usrChat = usr;
             selChat = sel;
+            if (sel != null) {
+                final Chat chat = Client.getInstance().getMyChats().get(sel);
+                if (chat != null) {
+                    lblChat.setText("会话：" + Client.getInstance().getMyChats().get(sel).getName());
+                    updateHistory();
+                } else if (UI.confirm("你不再此会话中，是否向该会话的创建者请求加入？")) {
+                    Client.getInstance().doWithSocket(socket -> socket.requestJoinChat(sel, Client.getInstance().getMyself()));
+                }
+            } else if (usr != null) {
+                lblChat.setText("用户：" + Client.getInstance().getUsers().get(usr).getName());
+                updateHistory();
+            } else {
+                lblChat.setText("");
+                webChat.getEngine().loadContent("");
+            }
         });
     }
 
@@ -99,10 +129,10 @@ public class Main implements Initializable {
         final ArrayList<User> list = new ArrayList<>(lstUser.getSelectionModel().getSelectedItems());
         list.removeIf(user -> user.getUuid() == Client.getInstance().getMyself());
 
-        if (list.size() == 1) {
-            UI.error("请选择至少一个初始会话成员");
-            return;
-        }
+//        if (list.size() == 1) {
+//            UI.error("请选择至少一个初始会话成员");
+//            return;
+//        }
 
         Client.getInstance().doWithSocket(socket -> socket.requestInitChat(
                 UI.input("请输入会话名称："),
@@ -115,6 +145,15 @@ public class Main implements Initializable {
     }
 
     public void actionExitChat() {
-        actionSwitchChat(usrChat, null);
+        switchToChat(usrChat, null);
+    }
+
+    public void actionSendMessage() {
+        if (selChat == null && usrChat == null)
+            return;
+
+        Client.getInstance().doWithSocket(socket -> socket.sendMessage(selChat != null ? selChat : usrChat,
+                                                                       txtChat.getText()));
+        txtChat.clear();
     }
 }
