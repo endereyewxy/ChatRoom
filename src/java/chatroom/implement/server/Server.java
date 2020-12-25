@@ -1,39 +1,47 @@
 package chatroom.implement.server;
 
-import chatroom.protocols.IServer;
-import chatroom.protocols.IServerSocket;
-import chatroom.protocols.entity.Chat;
-import chatroom.protocols.entity.Flag;
-import chatroom.protocols.entity.User;
+import chatroom.protocol.IServer;
+import chatroom.protocol.IServerSocket;
+import chatroom.protocol.Protocol;
+import chatroom.protocol.entity.Chat;
+import chatroom.protocol.entity.User;
+import chatroom.util.Log;
 import chatroom.util.MD5;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Scanner;
 
 public class Server implements IServer {
     private IServerSocket socket;
 
-    private final HashMap<String, User> userData = new HashMap<>();
-    private final boolean               authMode = Boolean.parseBoolean(System.getProperty("server.authMode"));
+    private int globalUuidGenerator = 0;
 
-    private final ArrayList<User> userList = new ArrayList<>();
-    private final ArrayList<Chat> chatList = new ArrayList<>();
+    // @formatter:off
+    private final HashMap<String , User   > userN2O = new HashMap<>();
+    private final HashMap<Integer, User   > userI2O = new HashMap<>();
+    private final HashMap<Integer, User   > userC2O = new HashMap<>();
+    private final HashMap<User   , Integer> userO2C = new HashMap<>();
+    private final HashMap<Integer, Chat   > chatI2O = new HashMap<>();
+    // @formatter:on
 
-    private final HashMap<Integer, Integer> u2c = new HashMap<>();
-    private final HashMap<Integer, User>    c2u = new HashMap<>();
+    private final HashMap<User, HashSet<Chat>> relationU2C = new HashMap<>();
+    private final HashMap<Chat, HashSet<User>> relationC2U = new HashMap<>();
 
     public Server() {
-        try (final FileInputStream inputStream = new FileInputStream(System.getProperty("server.userData"))) {
+        try (final FileInputStream inputStream = new FileInputStream(System.getProperty("server.user"))) {
             final Scanner scanner = new Scanner(inputStream);
             while (scanner.hasNext()) {
-                final String username = scanner.next();
-                final String password = scanner.next();
-                userData.put(username, new User(userList.size() + 1, (byte) 0, username, MD5.md5(password)));
-                userList.add(null);
+                final String name = scanner.next();
+                final String pass = scanner.next();
+                userN2O.put(name, new User(++globalUuidGenerator, name, MD5.md5(pass)));
             }
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
+            Log.server("Cannot start server because no user authentication data is provided");
+            Log.failed();
         }
     }
 
@@ -43,109 +51,195 @@ public class Server implements IServer {
     }
 
     @Override
-    public void clientClosed(int client) throws IOException {
-        userList.set(c2u.get(client).getUuid() - 1, null);
-        u2c.remove(c2u.get(client).getUuid());
-        c2u.remove(client);
-        for (final int cli : c2u.keySet())
-            acquireUserList(cli);
-    }
+    public void requestSignIn(int client, String name, String pMd5) throws IOException {
+        final User user = userN2O.get(name);
 
-    @Override
-    public void acquireUserList(int client) throws IOException {
-        socket.replyUserList(client, userList.stream()
-                                             .filter(Objects::nonNull)
-                                             .toArray(User[]::new));
-    }
-
-    @Override
-    public void acquireChatList(int client) throws IOException {
-        final User user = c2u.get(client);
-        socket.replyChatList(client, chatList.stream()
-                                             .filter(Objects::nonNull)
-                                             .map(chat -> chat.shadow(Flag.of(user, chat)))
-                                             .toArray(Chat[]::new));
-    }
-
-    @Override
-    public void acquireChatMemberList(int client, int chatUuid) throws IOException {
-        final Chat chat = chatList.get(chatUuid - 1);
-        socket.replyChatMemberList(client, chat.getMembers().stream()
-                                               .filter(Objects::nonNull)
-                                               .map(uuid -> userList.get(uuid - 1))
-                                               .map(user -> user.shadow(Flag.of(user, chat)))
-                                               .toArray(User[]::new));
-    }
-
-    @Override
-    public void requestSignIn(int client, String username, String password) throws IOException {
-        User matched = userData.get(username);
-        if (matched == null && !authMode) {
-            matched = new User(userList.size() + 1, (byte) 0, username, password);
-            userData.put(matched.getUsername(),
-                         matched);
-            userList.add(matched);
+        if (user == null) {
+            socket.notifySignInRejected(client, Protocol.REASON_BAD_NAME);
+            Log.server("Client %d failed to sign in because of wrong username", client);
+            return;
         }
-        if (matched != null && matched.getPassword().equals(password)) {
-            u2c.put(matched.getUuid(), client);
-            c2u.put(client, matched);
-            userList.set(matched.getUuid() - 1, matched);
-            socket.notifySignInSucceeded(client, matched.getUuid());
-            for (int cli : c2u.keySet())
-                acquireUserList(cli);
-        } else {
-            socket.notifySignInSucceeded(client, 0);
+
+        if (!user.getPMd5().equals(pMd5)) {
+            socket.notifySignInRejected(client, Protocol.REASON_BAD_PASS);
+            Log.server("Client %d failed to sign in because of wrong password", client);
+            return;
         }
+
+        if (userC2O.containsKey(client)) {
+            socket.notifySignInRejected(client, Protocol.REASON_ALREADY_SIGNED_IN);
+            Log.server("Client %d failed to sign in because he/she has already signed in", client);
+            return;
+        }
+
+        if (userI2O.containsKey(user.getUuid())) {
+            socket.notifySignInRejected(client, Protocol.REASON_ANOTHER_SIGNED_IN);
+            Log.server("Client %d failed to sign in because another client has already signed in", client);
+            return;
+        }
+
+        // @formatter:off
+        userI2O    .put        (user.getUuid(), user);
+        userO2C    .put        (user          , client);
+        userC2O    .put        (client        , user);
+        relationU2C.putIfAbsent(user          , new HashSet<>());
+        // @formatter:on
+        socket.notifySignInAccepted(client, user.getUuid());
+        doUpdateUserList(client);
+        doUpdateChatList(client);
+
+        Log.server("Client %d successfully signed in as %d", client, user.getUuid());
     }
 
     @Override
-    public void requestCreateChat(int client, String name, User[] users) throws IOException {
-        final User user = c2u.get(client);
-        final Chat chat = new Chat(chatList.size() + 1, (byte) 0, name, user.getUuid(), new HashSet<>());
-        chat.getMembers().add(user.getUuid());
+    public void clientOffline(int client) throws IOException {
+        final User user = userC2O.get(client);
+
+        if (user == null) {
+            Log.server("Invalid request");
+            return;
+        }
+
+        userI2O.remove(user.getUuid());
+        userO2C.remove(user);
+        userC2O.remove(client);
+
+        for (final int clit : userO2C.values())
+            doUpdateUserList(clit);
+
+        for (final Chat chat : relationU2C.get(user))
+            doQuitChat(chat, user, Protocol.REASON_OFFLINE);
+    }
+
+    @Override
+    public void requestChatInfo(int client, int chat) throws IOException {
+        final User userObj = userC2O.get(client);
+        final Chat chatObj = chatI2O.get(chat);
+
+        if (userObj == null || chatObj == null) {
+            Log.server("Invalid request");
+            return;
+        }
+
+        final HashSet<User> chatInfo = relationC2U.get(chatObj);
+        if (chatInfo.contains(userObj))
+            socket.updateChatInfo(client, chatInfo.toArray(new User[0]));
+    }
+
+    @Override
+    public void requestInitChat(int client, String name, Integer[] members) throws IOException {
+        final User user = userC2O.get(client);
+        final Chat chat = new Chat(++globalUuidGenerator, name, user.getUuid());
+
+        // @formatter:off
+        chatI2O    .put(chat.getUuid(), chat);
+        relationC2U.put(chat          , new HashSet<>());
+        // @formatter:on
+        doJoinChat(chat, user, Protocol.REASON_CREATE);
+        for (final int member : members)
+            doJoinChat(chat, userI2O.get(member), Protocol.REASON_NORMAL);
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    @Override
+    public void requestJoinChat(int client, int chat, int user) throws IOException {
+        final User userObj = userC2O.get(client);
+        final Chat chatObj = chatI2O.get(chat);
+        final User joinObj = userI2O.get(user);
+
+        if (userObj == null || chatObj == null || joinObj == null) {
+            Log.server("Invalid request");
+            return;
+        }
+
+        if (userObj == joinObj) {
+            socket.notifyChatJoinRequest(userO2C.get(userI2O.get(chatObj.getInit())), chat, user);
+            Log.server("User %d wish to join chat %d, waiting for initiator's agreement", user, chat);
+            return;
+        }
+
+        if (userObj.getUuid() == chatObj.getInit())
+            doJoinChat(chatObj, joinObj, Protocol.REASON_NORMAL);
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    @Override
+    public void requestQuitChat(int client, int chat, int user) throws IOException {
+        final User userObj = userC2O.get(client);
+        final Chat chatObj = chatI2O.get(chat);
+        final User joinObj = userI2O.get(user);
+
+        if (userObj == null || chatObj == null || joinObj == null) {
+            Log.server("Invalid request");
+            return;
+        }
+
+        if (userObj == joinObj) {
+            doQuitChat(chatObj, joinObj, Protocol.REASON_SELF_QUIT);
+            return;
+        }
+
+        if (userObj.getUuid() == chatObj.getInit())
+            doQuitChat(chatObj, joinObj, Protocol.REASON_INIT_QUIT);
+    }
+
+    @Override
+    public void sendMessage(int client, int uuid, String msg) throws IOException {
+        final User user = userI2O.get(uuid);
+        final Chat chat = chatI2O.get(uuid);
+        final User from = userC2O.get(client);
+
+        if (user != null) {
+            socket.notifyMessage(from.getUuid(), userO2C.get(user), from.getUuid(), msg);
+            Log.server("Message U2U %d -> %d: \"%s\"", from.getUuid(), uuid, msg);
+        }
+
+        if (chat != null) {
+            for (final User member : relationC2U.get(chat))
+                socket.notifyMessage(chat.getUuid(), userO2C.get(member), from.getUuid(), msg);
+            Log.server("Message U2C %d -> %d: \"%s\"", from.getUuid(), uuid, msg);
+        }
+    }
+
+    private void doUpdateUserList(int client) throws IOException {
+        socket.updateUserList(client, userI2O.values().toArray(new User[0]));
+    }
+
+    private void doUpdateChatList(int client) throws IOException {
+        socket.updateChatList(client, chatI2O.values().toArray(new Chat[0]));
+    }
+
+    private void doJoinChat(Chat chat, User user, byte reason) throws IOException {
+        final HashSet<Chat> chats = relationU2C.get(user);
+        final HashSet<User> users = relationC2U.get(chat);
+
+        if (users.contains(user)) {
+            Log.server("User %d tried to join chat %d but he/she is already in it", user.getUuid(), chat.getUuid());
+            return;
+        }
+
+        chats.add(chat);
+        users.add(user);
         for (final User u : users)
-            chat.getMembers().add(u.getUuid());
-        chatList.add(chat);
-        for (int cli : c2u.keySet())
-            acquireChatList(cli);
+            socket.notifyChatJoined(userO2C.get(u), chat.getUuid(), user.getUuid(), reason);
+
+        Log.server("User %d joined chat %d", user.getUuid(), chat.getUuid());
     }
 
-    @Override
-    public void requestJoinChat(int client, int userUuid, int chatUuid) throws IOException {
-        final User user = c2u.get(client);
-        final Chat chat = chatList.get(chatUuid - 1);
+    private void doQuitChat(Chat chat, User user, byte reason) throws IOException {
+        final HashSet<Chat> chats = relationU2C.get(user);
+        final HashSet<User> users = relationC2U.get(chat);
 
-        if (chat.getMembers().contains(userUuid))
+        if (!users.contains(user)) {
+            Log.server("User %d tried to quit chat %d but he/she isn't in it", user.getUuid(), chat.getUuid());
             return;
-
-        if (user.getUuid() == chat.getCreator())
-            chat.getMembers().add(userUuid);
-        else if (user.getUuid() == userUuid)
-            socket.notifyChatJoinRequest(u2c.get(chat.getCreator()), userUuid, chatUuid);
-    }
-
-    @Override
-    public void requestQuitChat(int client, int userUuid, int chatUuid) throws IOException {
-        final User user = c2u.get(client);
-        final Chat chat = chatList.get(chatUuid - 1);
-
-        if (!chat.getMembers().contains(userUuid))
-            return;
-
-        if (user.getUuid() == chat.getCreator() && user.getUuid() == userUuid) {
-            chatList.set(chatUuid - 1, null);
-            for (int cli : c2u.keySet())
-                acquireChatList(cli);
-        } else if (user.getUuid() == chat.getCreator() || user.getUuid() == userUuid) {
-            chat.getMembers().remove(userUuid);
         }
-    }
 
-    @Override
-    public void requestSendMessage(int client, int chatUuid, String text) throws IOException {
-        for (final int userUuid : chatList.get(chatUuid - 1).getMembers()) {
-            if (u2c.containsKey(userUuid))
-                socket.notifyMessageReceived(u2c.get(userUuid), c2u.get(client).getUuid(), chatUuid, text);
-        }
+        chats.remove(chat);
+        users.remove(user);
+        for (final User u : users)
+            socket.notifyChatQuited(userO2C.get(u), chat.getUuid(), user.getUuid(), reason);
+
+        Log.server("User %d quited chat %d", user.getUuid(), chat.getUuid());
     }
 }

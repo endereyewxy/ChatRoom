@@ -1,7 +1,7 @@
 package chatroom.util;
 
-import chatroom.protocols.entity.Chat;
-import chatroom.protocols.entity.User;
+import chatroom.protocol.entity.Chat;
+import chatroom.protocol.entity.User;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,14 +38,13 @@ public class ByteOStream {
 
     public void writeUser(User user) throws IOException {
         writeUuid(user.getUuid());
-        writeByte(user.getFlag());
-        writeString(user.getUsername());
+        writeString(user.getName());
     }
 
     public void writeChat(Chat chat) throws IOException {
         writeUuid(chat.getUuid());
-        writeByte(chat.getFlag());
         writeString(chat.getName());
+        writeUuid(chat.getInit());
     }
 
     @FunctionalInterface

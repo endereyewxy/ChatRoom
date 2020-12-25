@@ -1,7 +1,7 @@
 package chatroom.util;
 
-import chatroom.protocols.entity.Chat;
-import chatroom.protocols.entity.User;
+import chatroom.protocol.entity.Chat;
+import chatroom.protocol.entity.User;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -35,16 +35,15 @@ public class ByteIStream {
 
     public User readUser() throws IOException {
         final int    uuid = readUuid();
-        final byte   flag = readByte();
         final String name = readString();
-        return new User(uuid, flag, name, "");
+        return new User(uuid, name, "");
     }
 
     public Chat readChat() throws IOException {
         final int    uuid = readUuid();
-        final byte   flag = readByte();
         final String name = readString();
-        return new Chat(uuid, flag, name, 0, null);
+        final int    init = readUuid();
+        return new Chat(uuid, name, init);
     }
 
     @FunctionalInterface

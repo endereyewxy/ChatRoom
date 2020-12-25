@@ -4,12 +4,20 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="170.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatroom.implement.client.ui.UIInit">
-    <Button layoutX="199.0" layoutY="250.0" mnemonicParsing="false" onAction="#signIn" text="登录"
-            AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0"/>
-    <TextField fx:id="username" layoutX="145.0" layoutY="62.0" promptText="用户名" AnchorPane.leftAnchor="50.0"
-               AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="20.0"/>
-    <PasswordField fx:id="password" layoutX="145.0" layoutY="76.0" promptText="密码" AnchorPane.leftAnchor="50.0"
-                   AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="70.0"/>
+<AnchorPane prefHeight="152.0" prefWidth="352.0" xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatroom.implement.client.ui.Init">
+    <GridPane hgap="15.0" layoutX="76.0" layoutY="81.0" vgap="15.0" AnchorPane.bottomAnchor="15.0"
+              AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
+        <columnConstraints>
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES"/>
+        </rowConstraints>
+        <TextField fx:id="txtUsername" promptText="用户名"/>
+        <PasswordField fx:id="txtPassword" promptText="密码" GridPane.rowIndex="1"/>
+        <Button mnemonicParsing="false" onAction="#actionSignIn" text="登录" GridPane.rowIndex="2"/>
+    </GridPane>
 </AnchorPane>
