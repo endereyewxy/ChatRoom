@@ -29,4 +29,5 @@ public abstract class Protocol {
     public static final byte REASON_OFFLINE   = 0x01;
     public static final byte REASON_INIT_QUIT = 0x02;
     public static final byte REASON_SELF_QUIT = 0x03;
+    public static final byte REASON_CHAT_QUIT = 0x04;
 }

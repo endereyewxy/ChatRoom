@@ -179,16 +179,17 @@ public class Server implements IServer {
         }
 
         if (userObj.getUuid() == chatObj.getInit()) {
-            doQuitChat(chatObj, quitObj, Protocol.REASON_INIT_QUIT);
-
             if (quitObj == userObj) {
-                chatI2O.remove(chat);
+                doQuitChat(chatObj, quitObj, Protocol.REASON_SELF_QUIT);
                 for (final User u : relationC2U.get(chatObj))
-                    relationU2C.get(u).remove(chatObj);
+                    doQuitChat(chatObj, u, Protocol.REASON_CHAT_QUIT);
+                chatI2O.remove(chat);
                 relationC2U.remove(chatObj);
 
                 for (final int clit : userO2C.values())
                     doUpdateChatList(clit);
+            } else {
+                doQuitChat(chatObj, quitObj, Protocol.REASON_INIT_QUIT);
             }
             return;
         }

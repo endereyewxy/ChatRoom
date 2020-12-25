@@ -166,8 +166,8 @@ public class Client implements IClient {
                     case Protocol.REASON_INIT_QUIT:
                         UI.inform(String.format("会话%s的创建者已把您移出会话", chats.get(chat).getName()));
                         break;
-                    case Protocol.REASON_SELF_QUIT:
-                        UI.inform(String.format("您已退出会话%s", chats.get(chat).getName()));
+                    case Protocol.REASON_CHAT_QUIT:
+                        UI.inform(String.format("会话%s已被创建者解散", chats.get(chat).getName()));
                 }
             }
         });
