@@ -3,6 +3,7 @@ package chatroom.implement.client.ui;
 import chatroom.implement.client.Client;
 import chatroom.protocol.entity.Chat;
 import chatroom.protocol.entity.User;
+import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -77,17 +78,21 @@ public class Main implements Initializable {
     public void actionSwitchChat(Integer usr, Integer sel) {
         if (Objects.equals(usr, usrChat) && Objects.equals(sel, selChat))
             return;
-
-        usrChat = usr;
-        selChat = sel;
-
-        if (sel != null) {
-            lblChat.setText(Client.getInstance().getMyChats().get(sel).getName());
-            Client.getInstance().doWithSocket(socket -> socket.requestChatInfo(sel));
-        } else {
-            lblChat.setText("");
-            updateUserList(null, Client.getInstance().getUsers().values().toArray(new User[0]));
-        }
+        Platform.runLater(() -> {
+            if (!Objects.equals(sel, selChat)) {
+                if (sel == null)
+                    updateUserList(null, Client.getInstance().getUsers().values().toArray(new User[0]));
+                else
+                    Client.getInstance().doWithSocket(socket -> socket.requestChatInfo(sel));
+            }
+            if (sel != null) {
+                lblChat.setText(Client.getInstance().getMyChats().get(sel).getName());
+            } else {
+                lblChat.setText("");
+            }
+            usrChat = usr;
+            selChat = sel;
+        });
     }
 
     public void actionInitChat() {

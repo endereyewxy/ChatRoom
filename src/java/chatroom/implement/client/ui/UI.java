@@ -63,14 +63,12 @@ public class UI extends Application {
     }
 
     public void switchToMain() {
-        stage.setTitle("聊天");
         stage.setScene(new Scene(mainWindow));
         stage.show();
     }
 
     public static String input(String msg) {
         final TextInputDialog input = new TextInputDialog();
-        input.setTitle("提示");
         input.setContentText(msg);
         input.showAndWait();
         return input.getResult();
@@ -78,7 +76,6 @@ public class UI extends Application {
 
     public static void error(String msg) {
         final Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("警告");
         alert.setContentText(msg);
         alert.showAndWait();
     }

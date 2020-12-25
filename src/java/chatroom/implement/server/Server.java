@@ -85,8 +85,9 @@ public class Server implements IServer {
         relationU2C.putIfAbsent(user          , new HashSet<>());
         // @formatter:on
         socket.notifySignInAccepted(client, user.getUuid());
-        doUpdateUserList(client);
         doUpdateChatList(client);
+        for (final int clit : userC2O.keySet())
+            doUpdateUserList(clit);
 
         Log.server("Client %d successfully signed in as %d", client, user.getUuid());
     }
