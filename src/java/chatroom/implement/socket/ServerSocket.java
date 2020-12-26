@@ -131,6 +131,16 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
         oStream.flush();
     }
 
+    @Override
+    public void notifyFileMsg(int client, int chat, int from, Byte[] data) throws IOException {
+        final ByteOStream oStream = oStreams.get(client);
+        oStream.writeByte(Protocol.S2C_MESSAGE_FILE);
+        oStream.writeUuid(chat);
+        oStream.writeUuid(from);
+        oStream.writeArray(data, oStream::writeByte);
+        oStream.flush();
+    }
+
     private void createThread(int client) {
         final ByteIStream iStream = iStreams.get(client);
         new Thread(() -> {
@@ -164,6 +174,10 @@ public class ServerSocket extends java.net.ServerSocket implements IServerSocket
                         case Protocol.C2S_MESSAGE:
                             final int uuid = iStream.readUuid();
                             server.sendMessage(client, uuid, iStream.readString());
+                            break;
+                        case Protocol.C2S_MESSAGE_FILE:
+                            final int uiid = iStream.readUuid();
+                            server.sendFileMsg(client, uiid, iStream.readArray(Byte[]::new, iStream::readByte));
                             break;
                         default:
                             Log.socket("Ignoring unknown control byte %02x", control);

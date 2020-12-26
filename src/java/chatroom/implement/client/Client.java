@@ -8,8 +8,10 @@ import chatroom.protocol.entity.Chat;
 import chatroom.protocol.entity.User;
 import chatroom.util.Log;
 import javafx.application.Platform;
+import javafx.stage.FileChooser;
 import javafx.util.Pair;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -191,5 +193,23 @@ public class Client implements IClient {
         (users.containsKey(chat) ? p2pChat : history).get(chat).add(h);
 
         Platform.runLater(() -> uiCtrl.getMainController().updateHistory());
+    }
+
+    @Override
+    public void notifyFileMsg(int chat, int from, Byte[] data) {
+        Platform.runLater(() -> {
+            try {
+                final FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("你接收到了一个新的文件，请选择保存位置");
+                final FileOutputStream stream = new FileOutputStream(fileChooser.showSaveDialog(uiCtrl.getStage()));
+                final byte[]           bytes  = new byte[data.length];
+                for (int i = 0; i < bytes.length; i++)
+                    bytes[i] = data[i];
+                stream.write(bytes);
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

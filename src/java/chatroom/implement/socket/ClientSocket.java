@@ -72,6 +72,11 @@ public class ClientSocket extends Socket implements IClientSocket {
                             final int from = iStream.readUuid();
                             client.notifyMessage(uuid, from, iStream.readString());
                             break;
+                        case Protocol.S2C_MESSAGE_FILE:
+                            final int f_uuid = iStream.readUuid();
+                            final int f_from = iStream.readUuid();
+                            client.notifyFileMsg(f_uuid, f_from, iStream.readArray(Byte[]::new, iStream::readByte));
+                            break;
                         default:
                             Log.socket("Ignoring unknown control byte %02x", control);
                     }
@@ -140,6 +145,13 @@ public class ClientSocket extends Socket implements IClientSocket {
         oStream.writeUuid(uuid);
         oStream.writeString(msg);
         oStream.flush();
+    }
 
+    @Override
+    public void sendFileMsg(int uuid, Byte[] data) throws IOException {
+        oStream.writeByte(Protocol.C2S_MESSAGE_FILE);
+        oStream.writeUuid(uuid);
+        oStream.writeArray(data, oStream::writeByte);
+        oStream.flush();
     }
 }

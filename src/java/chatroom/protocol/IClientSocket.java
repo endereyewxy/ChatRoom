@@ -23,4 +23,6 @@ public interface IClientSocket {
 
 
     void sendMessage(int uuid, String msg) throws IOException;
+
+    void sendFileMsg(int uuid, Byte[] data) throws IOException;
 }

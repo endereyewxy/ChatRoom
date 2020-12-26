@@ -9,14 +9,18 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.util.Pair;
 
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Main implements Initializable {
     @FXML
@@ -85,11 +89,11 @@ public class Main implements Initializable {
         for (final Pair<String, String> h : selChat != null
                                             ? Client.getInstance().getHistory().get(selChat)
                                             : Client.getInstance().getP2pChat().get(usrChat))
-            builder.append("<p style=\"color: blue; text-decoration: underline;\">")
+            builder.append("<span style=\"color: blue; text-decoration: underline;\">")
                    .append(h.getKey())
-                   .append("</p><p>&nbsp;&nbsp;&nbsp;&nbsp;")
+                   .append("</span><br/><span>&nbsp;&nbsp;&nbsp;&nbsp;")
                    .append(h.getValue())
-                   .append("</p>");
+                   .append("</span><br/><br/>");
         webChat.getEngine().loadContent(builder.toString());
     }
 
@@ -170,5 +174,18 @@ public class Main implements Initializable {
         Client.getInstance().doWithSocket(socket -> socket.sendMessage(selChat != null ? selChat : usrChat,
                                                                        txtChat.getText()));
         txtChat.clear();
+    }
+
+    public void actionSendFile() {
+        if (selChat == null && usrChat == null)
+            return;
+        final FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("选择上传的文件");
+        final File file = fileChooser.showOpenDialog(lblChat.getScene().getWindow());
+        Client.getInstance().doWithSocket(socket -> {
+            final byte[] bytes = Files.readAllBytes(file.toPath());
+            socket.sendFileMsg(selChat != null ? selChat : usrChat,
+                               IntStream.range(0, bytes.length).mapToObj(i -> bytes[i]).toArray(Byte[]::new));
+        });
     }
 }
