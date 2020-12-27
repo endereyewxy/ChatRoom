@@ -30,4 +30,6 @@ public interface IClient {
 
 
     void notifyMessage(int chat, int from, String msg) throws IOException;
+
+    void notifyFileMsg(int chat, int from, byte[] data) throws IOException;
 }

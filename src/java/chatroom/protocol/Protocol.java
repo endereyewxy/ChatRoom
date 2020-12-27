@@ -10,13 +10,15 @@ public abstract class Protocol {
     public static final byte S2C_CHAT_QUITED         = 0x07;
     public static final byte S2C_CHAT_JOIN_REQUESTED = 0x08;
     public static final byte S2C_MESSAGE             = 0x09;
+    public static final byte S2C_MESSAGE_FILE        = 0x0A;
 
-    public static final byte C2S_SIGN_IN   = 0x01;
-    public static final byte C2S_CHAT_INFO = 0x02;
-    public static final byte C2S_INIT_CHAT = 0x03;
-    public static final byte C2S_JOIN_CHAT = 0x04;
-    public static final byte C2S_QUIT_CHAT = 0x05;
-    public static final byte C2S_MESSAGE   = 0x06;
+    public static final byte C2S_SIGN_IN      = 0x01;
+    public static final byte C2S_CHAT_INFO    = 0x02;
+    public static final byte C2S_INIT_CHAT    = 0x03;
+    public static final byte C2S_JOIN_CHAT    = 0x04;
+    public static final byte C2S_QUIT_CHAT    = 0x05;
+    public static final byte C2S_MESSAGE      = 0x06;
+    public static final byte C2S_MESSAGE_FILE = 0x07;
 
     public static final byte REASON_BAD_NAME          = 0x01;
     public static final byte REASON_BAD_PASS          = 0x02;

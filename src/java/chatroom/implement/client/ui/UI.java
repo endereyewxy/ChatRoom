@@ -34,6 +34,10 @@ public class UI extends Application {
         return mainController;
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     @Override
     public void start(Stage primaryStage) {
         Client.getInstance().bind(this);

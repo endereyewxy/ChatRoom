@@ -218,6 +218,26 @@ public class Server implements IServer {
         }
     }
 
+    @Override
+    public void sendFileMsg(int client, int uuid, byte[] data) throws IOException {
+        final User user = userI2O.get(uuid);
+        final Chat chat = chatI2O.get(uuid);
+        final User from = userC2O.get(client);
+
+        if (user != null) {
+            socket.notifyFileMsg(userO2C.get(user), from.getUuid(), from.getUuid(), data);
+            if (user != from)
+                socket.notifyFileMsg(userO2C.get(from), from.getUuid(), from.getUuid(), data);
+            Log.server("File message U2U %d -> %d", from.getUuid(), uuid);
+        }
+
+        if (chat != null) {
+            for (final User member : relationC2U.get(chat))
+                socket.notifyFileMsg(userO2C.get(member), chat.getUuid(), from.getUuid(), data);
+            Log.server("File message U2C %d -> %d", from.getUuid(), uuid);
+        }
+    }
+
     private void doUpdateUserList(int client) throws IOException {
         socket.updateUserList(client, userI2O.values().toArray(new User[0]));
     }

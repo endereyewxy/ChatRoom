@@ -37,19 +37,31 @@ public abstract class Log {
     }
 
     public static <T> T client(String format, T arguments) {
-        return log("client", format, arguments);
+        if (debug || enaClient)
+            return log("client", format, arguments);
+        else
+            return arguments;
     }
 
     public static <T> T server(String format, T arguments) {
-        return log("server", format, arguments);
+        if (debug || enaServer)
+            return log("server", format, arguments);
+        else
+            return arguments;
     }
 
     public static <T> T socket(String format, T arguments) {
-        return log("socket", format, arguments);
+        if (debug || enaSocket)
+            return log("socket", format, arguments);
+        else
+            return arguments;
     }
 
     public static <T> T stream(String format, T arguments) {
-        return log("stream", format, arguments);
+        if (debug || enaStream)
+            return log("stream", format, arguments);
+        else
+            return arguments;
     }
 
     private static void log(String identifier, String format, Object... arguments) {
