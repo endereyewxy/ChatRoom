@@ -2,7 +2,6 @@ package chatroom.protocol;
 
 import chatroom.protocol.entity.Chat;
 import chatroom.protocol.entity.User;
-import chatroom.util.ByteOStream;
 
 import java.io.IOException;
 
@@ -32,5 +31,5 @@ public interface IClient {
 
     void notifyMessage(int chat, int from, String msg) throws IOException;
 
-    void notifyFileMsg(int chat, int from, Byte[] data) throws IOException;
+    void notifyFileMsg(int chat, int from, byte[] data) throws IOException;
 }

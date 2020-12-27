@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Main implements Initializable {
     @FXML
@@ -182,10 +181,7 @@ public class Main implements Initializable {
         final FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("选择上传的文件");
         final File file = fileChooser.showOpenDialog(lblChat.getScene().getWindow());
-        Client.getInstance().doWithSocket(socket -> {
-            final byte[] bytes = Files.readAllBytes(file.toPath());
-            socket.sendFileMsg(selChat != null ? selChat : usrChat,
-                               IntStream.range(0, bytes.length).mapToObj(i -> bytes[i]).toArray(Byte[]::new));
-        });
+        Client.getInstance().doWithSocket(socket -> socket.sendFileMsg(selChat != null ? selChat : usrChat,
+                                                                       Files.readAllBytes(file.toPath())));
     }
 }

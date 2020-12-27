@@ -196,16 +196,13 @@ public class Client implements IClient {
     }
 
     @Override
-    public void notifyFileMsg(int chat, int from, Byte[] data) {
+    public void notifyFileMsg(int chat, int from, byte[] data) {
         Platform.runLater(() -> {
             try {
                 final FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("你接收到了一个新的文件，请选择保存位置");
                 final FileOutputStream stream = new FileOutputStream(fileChooser.showSaveDialog(uiCtrl.getStage()));
-                final byte[]           bytes  = new byte[data.length];
-                for (int i = 0; i < bytes.length; i++)
-                    bytes[i] = data[i];
-                stream.write(bytes);
+                stream.write(data);
                 stream.close();
             } catch (IOException e) {
                 e.printStackTrace();

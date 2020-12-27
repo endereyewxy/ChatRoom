@@ -6,8 +6,8 @@ import chatroom.protocol.entity.User;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.function.IntFunction;
 
 public class ByteIStream {
@@ -23,9 +23,7 @@ public class ByteIStream {
 
     public int readUuid() throws IOException {
         final byte[] data = read(4);
-        return Log.stream("<= %d", (data[0] << 0x18) |
-                                   (data[1] << 0x10) |
-                                   (data[2] << 0x08) | data[3]);
+        return Log.stream("<= %d", ByteBuffer.wrap(data).getInt());
     }
 
     public String readString() throws IOException {
@@ -58,17 +56,15 @@ public class ByteIStream {
         return array;
     }
 
-    private byte[] read(int length) throws IOException {
-        final byte[] buffer = new byte[length];
-        while (true) {
-            final int actual = inputStream.read(buffer);
-            if (actual == length)
-                break;
-            if (actual == -1)
+    public byte[] read(int length) throws IOException {
+        final ByteBuffer totalBuffer = ByteBuffer.allocate(length);
+        final byte[]     batchBuffer = new byte[length];
+        for (int i = 0, a; i < length; ) {
+            if ((a = inputStream.read(batchBuffer)) == -1)
                 throw new EOFException();
-            Log.stream("<! Ignoring because %d (actual) != %d (expected)", actual, length);
+            i += a;
+            totalBuffer.put(batchBuffer, 0, a);
         }
-        Log.stream("<= %s", Arrays.toString(buffer));
-        return buffer;
+        return totalBuffer.array();
     }
 }

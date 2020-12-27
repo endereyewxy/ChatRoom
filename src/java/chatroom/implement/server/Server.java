@@ -219,7 +219,7 @@ public class Server implements IServer {
     }
 
     @Override
-    public void sendFileMsg(int client, int uuid, Byte[] data) throws IOException {
+    public void sendFileMsg(int client, int uuid, byte[] data) throws IOException {
         final User user = userI2O.get(uuid);
         final Chat chat = chatI2O.get(uuid);
         final User from = userC2O.get(client);

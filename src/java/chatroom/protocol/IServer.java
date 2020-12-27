@@ -22,5 +22,5 @@ public interface IServer {
 
     void sendMessage(int client, int uuid, String msg) throws IOException;
 
-    void sendFileMsg(int client, int uuid, Byte[] data) throws IOException;
+    void sendFileMsg(int client, int uuid, byte[] data) throws IOException;
 }
